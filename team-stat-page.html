@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleeper League Roster Dashboard</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f7f6; color: #333; padding: 20px; }
+        h1, h3 { margin-bottom: 5px; }
+        .status-message { font-size: 14px; color: #666; margin-bottom: 20px; font-style: italic; }
+        
+        /* Filter controls */
+        .controls { margin-bottom: 25px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; display: inline-block; }
+        .controls label { font-weight: bold; margin-right: 10px; }
+        .controls select { padding: 8px 12px; font-size: 14px; border-radius: 4px; border: 1px solid #ccc; }
+
+        /* Team Grouping Layout */
+        .team-section { margin-bottom: 40px; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); border: 1px solid #eee; }
+        .team-title { font-size: 20px; color: #0070f3; border-bottom: 2px solid #0070f3; padding-bottom: 5px; margin-bottom: 15px; }
+        
+        .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+        .player-card { background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 15px; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; border-left: 1px solid #ddd; }
+        .player-card:hover { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-color: #0070f3; }
+        .player-name { font-weight: bold; font-size: 16px; margin-bottom: 5px; }
+        .player-meta { font-size: 13px; color: #666; }
+        
+        /* Lineup Designation Badges */
+        .slot-badge { font-size: 11px; padding: 1px 5px; border-radius: 3px; font-weight: bold; text-transform: uppercase; }
+        .badge-starter { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-bench { background: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+        .badge-taxi { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+
+        /* Injury Card Highlighting Rules */
+        .injury-out { border-left: 6px solid #ef4444 !important; background: #fef2f2 !important; }
+        .injury-questionable { border-left: 6px solid #eab308 !important; background: #fefce8 !important; }
+        .injury-ir { border-left: 6px solid #f97316 !important; background: #fff7ed !important; }
+        .injury-doubtful { border-left: 6px solid #ec4899 !important; background: #fdf2f8 !important; }
+        
+        /* Modal System Styling */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 100; }
+        .stats-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 450px; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 101; }
+        .modal-header { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 20px; font-weight: bold; margin: 0; }
+        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; font-size: 15px; }
+        .stat-value { font-weight: bold; color: #0070f3; }
+        .close-btn { background: #333; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 14px; margin-top: 20px; font-weight: bold; }
+        .close-btn:hover { background: #000; }
+        .show { display: block !important; }
+    </style>
+</head>
+<body>
+    
+ <div style="margin-bottom:20px;">
+    <a href="index.html">Home Page</a> |
+    <a href="keepers.html">Keeper Tracker</a> |
+    <a href="standings.html">Standings</a> |
+    <a href="rules.html">League Rules</a> |
+    <a href="team-stat-page.html">Team Rosters</a>
+</div>
+    
+    <h1>League Dashboard</h1>
+    <div id="status" class="status-message">Initializing system datasets...</div>
+
+    <!-- Dropdown for Team Selection -->
+    <div class="controls">
+        <label for="team-select">Select View:</label>
+        <select id="team-select" disabled>
+            <option value="all">-- All Teams --</option>
+        </select>
+    </div>
+
+    <!-- Container for Teams and Rosters -->
+    <div id="dashboard-container"></div>
+
+    <!-- Stats Display Modal Trigger -->
+    <div id="modal-overlay" class="modal-overlay" onclick="closeModal()"></div>
+    <div id="stats-modal" class="stats-modal">
+        <div class="modal-header">
+            <h2 id="modal-name" class="modal-title">Player Stats</h2>
+        </div>
+        <div class="stat-row"><span>Position:</span> <span id="modal-pos" class="stat-value">-</span></div>
+        <div class="stat-row"><span>Team:</span> <span id="modal-team" class="stat-value">-</span></div>
+        <div class="stat-row"><span>Status:</span> <span id="modal-status-txt" class="stat-value">-</span></div>
+        <div class="stat-row"><span>Injury Status:</span> <span id="modal-injury" class="stat-value">-</span></div>
+        <div class="stat-row"><span>Positional Ranking:</span> <span id="modal-rank" class="stat-value">-</span></div>
+        <div class="stat-row"><span>Projected Season PPR:</span> <span id="modal-proj-ppr" class="stat-value">-</span></div>
+        
+        <button class="close-btn" onclick="closeModal()">Close Details</button>
+    </div>
+
+    <script src="stats-app.js"></script>
+</body>
+</html>
