@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>League Rules & Scoring</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f5f7fa; color: #333; margin: 0; padding: 20px; }
+.container { max-width: 1000px; margin: auto; }
+.header { background: #1f2937; color: white; padding: 25px; border-radius: 10px; text-align: center; }
+.section { background: white; margin-top: 20px; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
+h2 { color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
+h3 { color: #4b5563; font-size: 16px; margin-top: 20px; margin-bottom: 10px; border-left: 4px solid #2563eb; padding-left: 8px; }
+.rule-box { background: #f9fafb; border-left: 4px solid #2563eb; padding: 12px; margin: 10px 0; }
+ul { line-height: 1.8; }
+
+/* Dynamic Scoring Table Layout */
+.scoring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-bottom: 15px; }
+.scoring-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
+.scoring-label { font-weight: 600; color: #4b5563; font-size: 14px; }
+.scoring-value { background: #2563eb; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; }
+.loading-text { font-style: italic; color: #6b7280; }
+</style>
+</head>
+
+<body>
+      
+ <div style="margin-bottom:20px;">
+    <a href="index.html">Home Page</a> |
+    <a href="keepers.html">Keeper Tracker</a> |
+    <a href="standings.html">Standings</a> |
+    <a href="rules.html">League Rules</a> |
+    <a href="team-stat-page.html">Team Rosters</a>
+</div>
+    
+    
+<div class="container">
+
+    <div class="header">
+        <h1>🏈 Flip Off Whatnot - League Rules & Scoring</h1>
+        <p>12-Team Sleeper League | Full PPR | Snake Draft</p>
+    </div>
+
+    <div class="section">
+        <h2>League Overview</h2>
+        <ul>
+            <li>Platform: Sleeper</li>
+            <li>Teams: 12</li>
+            <li>Scoring: Full PPR</li>
+            <li>Draft Format: Snake Draft</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Keeper Structure</h2>
+        <div class="rule-box">
+            Each team may keep:
+            <ul>
+                <li>1 Rookie Keeper</li>
+                <li>1 Open Keeper (any eligible player)</li>
+            </ul>
+        </div>
+        <div class="rule-box">
+            Managers may keep fewer than two players but may not exceed two keepers.
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Keeper Eligibility</h2>
+        <h3>Rookie Keeper</h3>
+        <p>Must have entered the NFL as a rookie during the previous season and be on the manager's roster at season end.</p>
+        <h3>Open Keeper</h3>
+        <p>Any eligible player on a manager's final roster may be selected.</p>
+    </div>
+
+    <div class="section">
+        <h2>Keeper Cost</h2>
+        <div class="rule-box">A keeper costs the draft round in which the player was originally selected.</div>
+        <p><strong>Example:</strong></p>
+        <ul>
+            <li>Drafted Round 8</li>
+            <li>Kept Next Season = Round 8 Cost</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Keeper Escalation</h2>
+        <div class="rule-box">Players may be kept for a maximum of two consecutive seasons.</div>
+        <p><strong>The additional keeper season costs are calculated based on original round drafted as follows:</strong></p>
+        <ul>    
+                <li>Round 4 to Round 14 or Free Agent/Waiver: Automatic 3rd Round Pick</li>
+                <li>Round 3: 2nd Round Pick</li>
+                <li>Round 2: 1st Round Pick</li>
+                <li>Round 1: Ineligible Keeper</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <ul>
+            <li>2026 Draft: Round 10</li>
+            <li>2027 Keeper: Round 10</li>
+            <li>2028 Keeper: Round 9</li>
+            <li>Returns to draft pool in 2029</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Trades</h2>
+        <ul>
+            <li>Keeper rights transfer with the player.</li>
+            <li>Keeper value remains unchanged after a trade.</li>
+            <li>Keeper history also transfers.</li>
+            <li>Trades may not be used to reset keeper eligibility.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Waivers & Free Agents</h2>
+        <div class="rule-box">Waiver and free-agent pickups receive a keeper value equal to the final draft round.</div>
+        <p>Example: An undrafted player picked up during the season can be kept using the manager's last-round draft pick.</p>
+    </div>
+
+    <div class="section">
+        <h2>Keeper Deadline</h2>
+        <p>All keeper selections must be submitted one week before the annual draft.</p>
+    </div>
+
+    <div class="section">
+        <h2>Competitive Integrity</h2>
+        <ul>
+            <li>No collusion.</li>
+            <li>No intentional tanking.</li>
+            <li>Managers must set active lineups.</li>
+            <li>Commissioner reserves the right to review suspicious activity.</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>Rule Changes</h2>
+        <ul>
+            <li>Standard rule changes require majority approval.</li>
+            <li>Keeper rule changes require a two-thirds majority.</li>
+            <li>Rule changes are not retroactive unless unanimously approved.</li>
+        </ul>
+    </div>
+
+    <!-- RESTRUCTURED SECTION: Ordered & Categorized Scoring Rules -->
+    <div class="section">
+        <h2>Live Scoring Settings</h2>
+        <div id="scoring-status" class="loading-text">Connecting to your Sleeper League configurations...</div>
+        
+        <div id="passing-title" style="display:none;"><h3>Passing</h3></div>
+        <div id="passing-container" class="scoring-grid"></div>
+
+        <div id="rushing-title" style="display:none;"><h3>Rushing</h3></div>
+        <div id="rushing-container" class="scoring-grid"></div>
+
+        <div id="receiving-title" style="display:none;"><h3>Receiving</h3></div>
+        <div id="receiving-container" class="scoring-grid"></div>
+
+        <div id="misc-title" style="display:none;"><h3>Misc</h3></div>
+        <div id="misc-container" class="scoring-grid"></div>
+    </div>
+
+</div>
+
+    <script>
+    // CONFIGURATION: Replace with your actual 18-digit Sleeper League ID
+    const RULES_LEAGUE_ID = "1181333596013768704";
+
+    // Strictly ordered array groups specifying chronological display hierarchy layout sequence maps
+    const passingOrder = ["pass_yd", "pass_td", "pass_2pt", "pass_int"];
+    const rushingOrder = ["rush_yd", "rush_td", "rush_2pt"];
+    const receivingOrder = ["rec_yd", "rec_td", "rec_2pt"];
+    const miscOrder      = ["fum_lost", "fum_rec_td"];
+
+    // Clean English translation map filter parameters
+    const scoringTranslationMap = {
+        "pass_yd": "Passing Yards",
+        "pass_td": "Passing TD",
+        "pass_2pt": "Passing 2-PT Conversion",
+        "pass_int": "Pass Intercepted",
+        "rush_yd": "Rushing Yards",
+        "rush_td": "Rushing TD",
+        "rush_2pt": "Rushing 2-PT Conversion",
+        "rec_yd": "Receiving Yards",
+        "rec_td": "Receiving TD",
+        "rec_2pt": "Receiving 2-PT Conversion",
+        "fum_lost": "Fumble Lost",
+        "fum_rec_td": "Fumble Recovery TD"
+    };
+
+    async function fetchScoringSettings() {
+        const statusDiv = document.getElementById('scoring-status');
+        
+        if (RULES_LEAGUE_ID === "YOUR_SLEEPER_LEAGUE_ID_HERE") {
+            statusDiv.innerText = "Error: Please edit rules.html and update the RULES_LEAGUE_ID variable.";
+            return;
+        }
+
+        try {
+            const response = await fetch(`https://api.sleeper.app/v1/league/${RULES_LEAGUE_ID}`);
+            const leagueData = await response.json();
+            const scoring = leagueData.scoring_settings || {};
+            
+            // Clear loading diagnostic text
+            statusDiv.innerText = "";
+
+            // Helper rendering processor loop
+            const renderGroup = (orderedKeys, containerId, titleId) => {
+                const container = document.getElementById(containerId);
+                const titleBlock = document.getElementById(titleId);
+                let hasItems = false;
+
+                orderedKeys.forEach(key => {
+                    // Check if setting is active in this specific league layout setup configuration
+                    if (scoring[key] !== undefined && scoringTranslationMap[key]) {
+                        hasItems = true;
+                        let rawValue = scoring[key];
+                        let displayValue = rawValue;
+
+                        // Formatting check converting yards decimals to clean yard totals
+                        if ((key === "pass_yd" || key === "rush_yd" || key === "rec_yd") && rawValue > 0 && rawValue < 1) {
+                            displayValue = `1 pt per ${Math.round(1 / rawValue)} yds`;
+                        } else {
+                            displayValue = rawValue >= 0 ? `+${rawValue} pts` : `${rawValue} pts`;
+                        }
+
+                        // Also append clean contextual baseline tags for clarity
+                        let labelText = scoringTranslationMap[key];
+                        if (key === "pass_int") displayValue = `${rawValue} pts`;
+
+                        const card = document.createElement('div');
+                        card.className = 'scoring-card';
+                        card.innerHTML = `
+                            <span class="scoring-label">${labelText}</span>
+                            <span class="scoring-value">${displayValue}</span>
+                        `;
+                        container.appendChild(card);
+                    }
+                });
+
+                // If items are verified active, uncover header block titles
+                if (hasItems && titleBlock) {
+                    titleBlock.style.display = "block";
+                }
+            };
+
+            // Execute isolated chronological render sequences across groups
+            renderGroup(passingOrder, "passing-container", "passing-title");
+            renderGroup(rushingOrder, "rushing-container", "rushing-title");
+            renderGroup(receivingOrder, "receiving-container", "receiving-title");
+            renderGroup(miscOrder, "misc-container", "misc-title");
+
+        } catch (error) {
+            console.error(error);
+            statusDiv.innerText = "Failed to sync rules from Sleeper API. Verify network status and League ID.";
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', fetchScoringSettings);
+</script>
+</body>
+</html>
