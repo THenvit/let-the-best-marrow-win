@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>League Dashboard</title>
+<title>Let The Best Marrow Win - League Dashboard</title>
 
 <style>
 body {
@@ -23,25 +23,49 @@ h1 {
     box-shadow: 0 2px 6px rgba(0,0,0,.1);
 }
 
+/* Updated Table Layout Elements */
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 10px;
 }
 
 th {
     background: #1f2937;
     color: white;
-    padding: 10px;
+    padding: 12px 10px;
+    font-weight: 600;
 }
 
 td {
-    padding: 8px;
+    padding: 10px;
     border-bottom: 1px solid #ddd;
+}
+
+/* Explicit Alignment Rules */
+.col-team {
+    text-align: left;
+    width: 50%;
+}
+
+.col-record {
+    text-align: center;
+    width: 25%;
+}
+
+.col-pf {
+    text-align: right;
+    width: 25%;
+    font-variant-numeric: tabular-nums; /* Keeps numbers perfectly stacked */
+}
+
+tr:hover {
+    background-color: #f8fafc;
 }
 
 .roster {
     display: grid;
-    grid-template-columns: repeat(auto-fill,minmax(300px,1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 15px;
 }
 
@@ -52,30 +76,37 @@ td {
     box-shadow: 0 2px 6px rgba(0,0,0,.1);
 }
 </style>
+
 </head>
 
 <body>
     
  <div style="margin-bottom:20px;">
     <a href="index.html">Home Page</a> |
-    <a href="keepers.html">Keeper Tracker</a> |
     <a href="standings.html">Standings</a> |
     <a href="rules.html">League Rules</a> |
     <a href="team-stat-page.html">Team Rosters</a>
 </div>
     
-<h1>🏈 Fantasy League Dashboard</h1>
+<h1>🏈 Let The Best Marrow Win - League Dashboard</h1>
 
+<div class="card">
+    <h2>Standings</h2>
+    <table id="standings">
 <div class="card">
     <h2>Standings</h2>
     <table id="standings">
         <thead>
             <tr>
-                <th>Team</th>
-                <th>Record</th>
-                <th>PF</th>
+                <th class="col-team">Team</th>
+                <th class="col-record">Record</th>
+                <th class="col-pf">PF</th>
             </tr>
         </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
         <tbody></tbody>
     </table>
 </div>
@@ -87,86 +118,104 @@ td {
 
 <script>
 
-const LEAGUE_ID = "1181333596013768704";
+// Global variable loaded dynamically from config.json
+let LEAGUE_ID = "";
 
 async function loadLeague() {
+    try {
+        // 1. Load the central configuration file first
+        const configRes = await fetch("config.json");
+        const configData = await configRes.json();
+        LEAGUE_ID = configData.LEAGUE_ID;
 
-    const users =
-        await fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`)
-        .then(r => r.json());
+        if (!LEAGUE_ID) {
+            throw new Error("LEAGUE_ID missing from config.json");
+        }
 
-    const rosters =
-        await fetch(`https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`)
-        .then(r => r.json());
+        // 2. Fetch data assets concurrently (Using local daily player cache file)
+        const usersUrl = 'https://api.sleeper.app/v1/league/' + LEAGUE_ID + '/users';
+        const rostersUrl = 'https://api.sleeper.app/v1/league/' + LEAGUE_ID + '/rosters';
+        const masterPlayersUrl = 'public/players.json'; // Faster execution using your local daily cron asset
 
-    const players =
-        await fetch(`https://api.sleeper.app/v1/players/nfl`)
-        .then(r => r.json());
+        const [usersRes, rostersRes, masterPlayersRes] = await Promise.all([
+            fetch(usersUrl),
+            fetch(rostersUrl),
+            fetch(masterPlayersUrl)
+        ]);
 
-    const ownerMap = {};
+        const users = await usersRes.json();
+        const rosters = await rostersRes.json();
+        const players = await masterPlayersRes.json();
 
-    users.forEach(user => {
-        ownerMap[user.user_id] =
-            user.metadata?.team_name ||
-            user.display_name;
-    });
+        const ownerMap = {};
 
-    rosters.sort((a,b) =>
-        b.settings.fpts + b.settings.fpts_decimal/100 -
-        (a.settings.fpts + a.settings.fpts_decimal/100)
-    );
+        users.forEach(user => {
+            ownerMap[user.user_id] =
+                user.metadata?.team_name ||
+                user.display_name;
+        });
 
-    const standingsBody =
-        document.querySelector("#standings tbody");
+        // Safe sorting equation using logical zero default switches
+        rosters.sort((a,b) => {
+            const scoreA = (a.settings?.fpts || 0) + ((a.settings?.fpts_decimal || 0) / 100);
+            const scoreB = (b.settings?.fpts || 0) + ((b.settings?.fpts_decimal || 0) / 100);
+            return scoreB - scoreA;
+        });
 
-    standingsBody.innerHTML = "";
+        const standingsBody =
+            document.querySelector("#standings tbody");
 
-    rosters.forEach(team => {
+        standingsBody.innerHTML = "";
 
-        const points =
-            team.settings.fpts +
-            team.settings.fpts_decimal/100;
+        rosters.forEach(team => {
+            const basePoints = team.settings?.fpts || 0;
+            const decimalPoints = team.settings?.fpts_decimal || 0;
+            const points = basePoints + (decimalPoints / 100);
+            
+            const wins = team.settings?.wins || 0;
+            const losses = team.settings?.losses || 0;
+            const ownerName = ownerMap[team.owner_id] || "Unknown Team";
 
-        standingsBody.innerHTML += `
-            <tr>
-                <td>${ownerMap[team.owner_id]}</td>
-                <td>${team.settings.wins}-${team.settings.losses}</td>
-                <td>${points.toFixed(2)}</td>
-            </tr>
-        `;
-    });
+            standingsBody.innerHTML += `
+                <tr>
+                    <td class="col-team"><strong>${ownerName}</strong></td>
+                    <td class="col-record">${wins}-${losses}</td>
+                    <td class="col-pf"><strong>${points.toFixed(2)}</strong></td>
+                </tr>
+            `;
+        });
 
-    const rosterContainer =
-        document.getElementById("rosters");
+        const rosterContainer =
+            document.getElementById("rosters");
 
-    rosterContainer.innerHTML = "";
+        rosterContainer.innerHTML = "";
 
-    rosters.forEach(team => {
+        rosters.forEach(team => {
+            const rosterPlayers = team.players || [];
+            const ownerName = ownerMap[team.owner_id] || "Unknown Team";
 
-        const rosterPlayers =
-            team.players || [];
+            const playerNames =
+                rosterPlayers
+                    .slice(0,20)
+                    .map(id => players[id]?.full_name || id)
+                    .join("<br>");
 
-        const playerNames =
-            rosterPlayers
-                .slice(0,20)
-                .map(id => players[id]?.full_name || id)
-                .join("<br>");
-
-        rosterContainer.innerHTML += `
-            <div class="team-card">
-                <h3>${ownerMap[team.owner_id]}</h3>
-                <p>${playerNames}</p>
-            </div>
-        `;
-    });
-
+            rosterContainer.innerHTML += `
+                <div class="team-card">
+                    <h3>${ownerName}</h3>
+                    <p>${playerNames}</p>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Failed to parse Sleeper league details:", err);
+    }
 }
 
+// Boot page execution
 loadLeague();
-
 setInterval(loadLeague, 300000);
 
 </script>
-
 </body>
 </html>
