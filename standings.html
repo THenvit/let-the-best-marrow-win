@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>League Standings & Playoff Odds</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f6f8;
+    margin:20px;
+}
+
+h1{
+    color:#1f2937;
+}
+
+.card{
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 2px 6px rgba(0,0,0,.1);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#1f2937;
+    color:white;
+    padding:12px;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+}
+
+.playoff-lock{
+    color:green;
+    font-weight:bold;
+}
+
+.playoff-bubble{
+    color:orange;
+    font-weight:bold;
+}
+
+.playoff-out{
+    color:red;
+    font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+    
+ <div style="margin-bottom:20px;">
+    <a href="index.html">Home Page</a> |
+    <a href="standings.html">Standings</a> |
+    <a href="rules.html">League Rules</a> |
+    <a href="team-stat-page.html">Team Rosters</a>
+</div>
+    
+<h1>🏈 League Standings & Playoff Odds</h1>
+
+<div class="card">
+
+<h2>Current Standings</h2>
+
+<table id="standingsTable">
+<thead>
+<tr>
+<th>Rank</th>
+<th>Team</th>
+<th>Record</th>
+<th>Points For</th>
+<th>Playoff Odds</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+</table>
+
+</div>
+
+<script>
+
+const LEAGUE_ID = "1181333596013768704";
+
+async function loadStandings(){
+
+    const [users, rosters] = await Promise.all([
+
+        fetch(
+            `https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`
+        ).then(r=>r.json()),
+
+        fetch(
+            `https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`
+        ).then(r=>r.json())
+    ]);
+
+    const teamNames = {};
+
+    users.forEach(user=>{
+
+        teamNames[user.user_id] =
+            user.metadata?.team_name ||
+            user.display_name;
+    });
+
+    const standings = rosters.map(roster=>{
+
+        const pf =
+            roster.settings.fpts +
+            (roster.settings.fpts_decimal || 0)/100;
+
+        return{
+
+            team:
+                teamNames[roster.owner_id],
+
+            wins:
+                roster.settings.wins,
+
+            losses:
+                roster.settings.losses,
+
+            pf
+        };
+    });
+
+    standings.sort((a,b)=>{
+
+        if(b.wins !== a.wins){
+
+            return b.wins - a.wins;
+        }
+
+        return b.pf - a.pf;
+    });
+
+    const tbody =
+        document.querySelector(
+            "#standingsTable tbody"
+        );
+
+    tbody.innerHTML = "";
+
+    standings.forEach((team,index)=>{
+
+        let odds;
+        let cssClass;
+
+        if(index < 4){
+
+            odds = "90%+";
+            cssClass = "playoff-lock";
+
+        }else if(index < 6){
+
+            odds = "60%-80%";
+            cssClass = "playoff-bubble";
+
+        }else{
+
+            odds = "<50%";
+            cssClass = "playoff-out";
+        }
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${index + 1}</td>
+            <td>${team.team}</td>
+            <td>${team.wins}-${team.losses}</td>
+            <td>${team.pf.toFixed(2)}</td>
+            <td class="${cssClass}">
+                ${odds}
+            </td>
+        </tr>
+        `;
+    });
+
+}
+
+loadStandings();
+
+setInterval(loadStandings,300000);
+
+</script>
+
+</body>
+</html>
