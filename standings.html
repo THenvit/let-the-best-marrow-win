@@ -1,198 +1,287 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>League Standings & Playoff Odds</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>League Standings & Playoff Odds - Flip Off Whatnot</title>
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+            --success-color: #16a34a;
+            --warning-color: #ea580c;
+            --danger-color: #dc2626;
+        }
+    
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding-top: 60px; /* Offset spacing context for the fixed top navbar */
+        }
+    
+        /* 📱 FIXED MOBILE NAV BAR: Restructures links into a touch-swipe menu track */
+        .nav-bar {
+            background: #0f172a;
+            padding: 0 10px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+    
+        .nav-bar::-webkit-scrollbar {
+            display: none; /* Hides standard system scrollbar tracks */
+        }
+    
+        .nav-bar a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+    
+        .nav-bar a:hover, .nav-bar a.active {
+            color: #ffffff;
+            background: var(--accent);
+        }
+    
+        .container {
+            max-width: 1000px;
+            margin: 15px auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+    
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+    
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+            width: 100%;
+        }
+    
+        .card h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #0f172a;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+    
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 6px;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Locks table from text-squishing inside phone viewports */
+        }
+    
+        th {
+            background: #f8fafc;
+            color: #0f172a; /* Darkened header values */
+            padding: 14px 12px;
+            font-weight: bold; /* Bolded table headers */
+            font-size: 0.88rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border-color);
+        }
+    
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.95rem;
+        }
+    
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+    
+        /* Column Sizing and Alignments */
+        .col-rank { text-align: center; width: 10%; }
+        .col-team { text-align: left; width: 40%; color: var(--primary); }
+        .col-record { text-align: center; width: 15%; font-weight: 600; }
+        .col-pf { text-align: right; width: 15%; font-variant-numeric: tabular-nums; font-weight: 500; }
+        .col-odds { text-align: center; width: 20%; }
+    
+        /* High-Contrast Standings Odds Indicators */
+        .playoff-lock { color: var(--success-color); font-weight: bold; }
+        .playoff-bubble { color: var(--warning-color); font-weight: bold; }
+        .playoff-out { color: var(--danger-color); font-weight: bold; }
+    
+        @media(min-width: 680px) {
+            .container { margin: 30px auto; padding: 0 20px; }
+            h1 { font-size: 1.8rem; }
+            .card { padding: 24px; }
+        }
+    </style>
 
-<style>
-body{
-    font-family:Arial,sans-serif;
-    background:#f4f6f8;
-    margin:20px;
-}
-
-h1{
-    color:#1f2937;
-}
-
-.card{
-    background:white;
-    border-radius:10px;
-    padding:20px;
-    margin-bottom:20px;
-    box-shadow:0 2px 6px rgba(0,0,0,.1);
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th{
-    background:#1f2937;
-    color:white;
-    padding:12px;
-}
-
-td{
-    padding:10px;
-    border-bottom:1px solid #ddd;
-    text-align:center;
-}
-
-.playoff-lock{
-    color:green;
-    font-weight:bold;
-}
-
-.playoff-bubble{
-    color:orange;
-    font-weight:bold;
-}
-
-.playoff-out{
-    color:red;
-    font-weight:bold;
-}
-</style>
 </head>
-
 <body>
-    
- <div style="margin-bottom:20px;">
-    <a href="index.html">Home Page</a> |
-    <a href="standings.html">Standings</a> |
-    <a href="rules.html">League Rules</a> |
+ 
+<!-- Pinned Navigation Header Bar (Responsive Mobile Swipe Menu) -->
+<div class="nav-bar">
+    <a href="index.html">Home Page</a>
+    <a href="keepers.html">Keeper Tracker</a>
+    <a href="standings.html" class="active">Standings</a>
+    <a href="rules.html">League Rules</a>
     <a href="team-stat-page.html">Team Rosters</a>
+    <a href="history.html">League History</a>
 </div>
+ 
+<div class="container">
+    <h1>🏈 League Standings & Playoff Odds</h1>
     
-<h1>🏈 League Standings & Playoff Odds</h1>
-
-<div class="card">
-
-<h2>Current Standings</h2>
-
-<table id="standingsTable">
-<thead>
-<tr>
-<th>Rank</th>
-<th>Team</th>
-<th>Record</th>
-<th>Points For</th>
-<th>Playoff Odds</th>
-</tr>
-</thead>
-
-<tbody></tbody>
-</table>
-
+    <div class="card">
+        <h2>Current Standings</h2>
+        <!-- 📱 RESPONSIVE WRAPPER: Shields table margins from mobile screen boundaries -->
+        <div class="table-responsive-wrapper">
+            <table id="standingsTable">
+                <thead>
+                    <tr>
+                        <th class="col-rank">Rank</th>
+                        <th class="col-team">Team</th>
+                        <th class="col-record">Record</th>
+                        <th class="col-pf">Points For</th>
+                        <th class="col-odds">Playoff Odds</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
-
-<script>
-
-const LEAGUE_ID = "1181333596013768704";
-
-async function loadStandings(){
-
-    const [users, rosters] = await Promise.all([
-
-        fetch(
-            `https://api.sleeper.app/v1/league/${LEAGUE_ID}/users`
-        ).then(r=>r.json()),
-
-        fetch(
-            `https://api.sleeper.app/v1/league/${LEAGUE_ID}/rosters`
-        ).then(r=>r.json())
-    ]);
-
-    const teamNames = {};
-
-    users.forEach(user=>{
-
-        teamNames[user.user_id] =
-            user.metadata?.team_name ||
-            user.display_name;
-    });
-
-    const standings = rosters.map(roster=>{
-
-        const pf =
-            roster.settings.fpts +
-            (roster.settings.fpts_decimal || 0)/100;
-
-        return{
-
-            team:
-                teamNames[roster.owner_id],
-
-            wins:
-                roster.settings.wins,
-
-            losses:
-                roster.settings.losses,
-
-            pf
-        };
-    });
-
-    standings.sort((a,b)=>{
-
-        if(b.wins !== a.wins){
-
-            return b.wins - a.wins;
+    <script>
+    // Global runtime league variable pulled dynamically from config.json
+    let LEAGUE_ID = "";
+    
+    async function loadStandings(){
+        try {
+            // 1. Fetch dynamic config.json requirements
+            const configRes = await fetch("config.json");
+            const configData = await configRes.json();
+            LEAGUE_ID = configData.LEAGUE_ID;
+    
+            if (!LEAGUE_ID) {
+                throw new Error("LEAGUE_ID variable missing from config.json.");
+            }
+    
+            // 2. Query data assets concurrently
+            const usersUrl = 'https://api.sleeper.app/v1/league/' + LEAGUE_ID + '/users';
+            const rostersUrl = 'https://api.sleeper.app/v1/league/' + LEAGUE_ID + '/rosters';
+    
+            const [users, rosters] = await Promise.all([
+                fetch(usersUrl).then(r=>r.json()),
+                fetch(rostersUrl).then(r=>r.json())
+            ]);
+    
+            // 3. Establish structured parenthetical title combinations
+            const fullDisplayMap = {};
+            users.forEach(user => {
+                const userName = user.display_name || user.username || "Unknown Owner";
+                if (user.metadata && user.metadata.team_name) {
+                    fullDisplayMap[user.user_id] = user.metadata.team_name + " (" + userName + ")";
+                } else {
+                    fullDisplayMap[user.user_id] = userName;
+                }
+            });
+    
+            // 4. Map settings and clear point fraction errors
+            const standings = rosters.map(roster => {
+                const pf = (roster.settings?.fpts || 0) + ((roster.settings?.fpts_decimal || 0) / 100);
+                return {
+                    team: fullDisplayMap[roster.owner_id] || ("Team " + roster.roster_id),
+                    wins: roster.settings?.wins || 0,
+                    losses: roster.settings?.losses || 0,
+                    pf: pf
+                };
+            });
+    
+            // 5. Sort rankings logically by wins, then points for tiebreakers
+            standings.sort((a,b) => {
+                if (b.wins !== a.wins) {
+                    return b.wins - a.wins;
+                }
+                return b.pf - a.pf;
+            });
+    
+            const tbody = document.querySelector("#standingsTable tbody");
+            tbody.innerHTML = "";
+    
+            // 6. Generate rows and assign playoff text indicators
+            standings.forEach((team, index) => {
+                let odds;
+                let cssClass;
+                
+                if (index < 4) {
+                    odds = "90%+";
+                    cssClass = "playoff-lock";
+                } else if (index < 6) {
+                    odds = "60%-80%";
+                    cssClass = "playoff-bubble";
+                } else {
+                    odds = "<50%";
+                    cssClass = "playoff-out";
+                }
+    
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="col-rank">${index + 1}</td>
+                        <td class="col-team"><strong>${team.team}</strong></td>
+                        <td class="col-record">${team.wins}-${team.losses}</td>
+                        <td class="col-pf"><strong>${team.pf.toFixed(2)}</strong></td>
+                        <td class="col-odds ${cssClass}">${odds}</td>
+                    </tr>
+                `;
+            });
+        } catch (err) {
+            console.error("Standings engine parsing failure:", err);
         }
-
-        return b.pf - a.pf;
-    });
-
-    const tbody =
-        document.querySelector(
-            "#standingsTable tbody"
-        );
-
-    tbody.innerHTML = "";
-
-    standings.forEach((team,index)=>{
-
-        let odds;
-        let cssClass;
-
-        if(index < 4){
-
-            odds = "90%+";
-            cssClass = "playoff-lock";
-
-        }else if(index < 6){
-
-            odds = "60%-80%";
-            cssClass = "playoff-bubble";
-
-        }else{
-
-            odds = "<50%";
-            cssClass = "playoff-out";
-        }
-
-        tbody.innerHTML += `
-        <tr>
-            <td>${index + 1}</td>
-            <td>${team.team}</td>
-            <td>${team.wins}-${team.losses}</td>
-            <td>${team.pf.toFixed(2)}</td>
-            <td class="${cssClass}">
-                ${odds}
-            </td>
-        </tr>
-        `;
-    });
-
-}
-
-loadStandings();
-
-setInterval(loadStandings,300000);
-
-</script>
+    }
+    
+    // Fire engine functions on load and refresh on a 5-minute loop
+    loadStandings();
+    setInterval(loadStandings, 300000);
+    </script>
 
 </body>
 </html>
