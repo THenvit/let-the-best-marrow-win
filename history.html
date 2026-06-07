@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>League History - Let The Best Marrow Win</title>
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #1e3a8a;
+            --accent: #3b82f6;
+        }
+    
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding-top: 60px; /* Crucial: Prevents fixed nav from overlapping content */
+        }
+    
+        /* 📱 FIXED MOBILE NAV BAR: Allows safe horizontal swipe-scrolling */
+        .nav-bar {
+            background: #0f172a;
+            padding: 0 10px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            overflow-x: auto; /* Forces horizontal scroll on phone displays */
+            white-space: nowrap; /* Keeps links pinned to a single line strip */
+            -webkit-overflow-scrolling: touch; /* Momentum drag scroll for iPhone browsers */
+        }
+    
+        .nav-bar::-webkit-scrollbar {
+            display: none; /* Hides system scrollbar track */
+        }
+    
+        .nav-bar a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            flex-shrink: 0; /* Prevents text crowding on narrow viewports */
+        }
+    
+        .nav-bar a:hover, .nav-bar a.active {
+            color: #ffffff;
+            background: var(--accent);
+        }
+    
+        /* Fluid Dashboard Main Container */
+        .history-container {
+            max-width: 1000px;
+            margin: 15px auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+    
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 20px;
+            word-break: break-word;
+        }
+    
+        /* Tab Switcher Styling (Mobile Friendly Swipe/Wrap) */
+        .tab-menu {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            white-space: nowrap;
+        }
+    
+        .tab-menu::-webkit-scrollbar {
+            display: none;
+        }
+    
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            height: 40px; /* Optimized mobile tap-target size */
+        }
+    
+        .tab-btn:hover {
+            color: var(--primary);
+            background: #e2e8f0;
+        }
+    
+        .tab-btn.active {
+            color: #ffffff;
+            background: var(--primary);
+        }
+    
+        .history-view {
+            display: none;
+        }
+    
+        .history-view.active-view {
+            display: block;
+        }
+    
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+            width: 100%;
+        }
+    
+        .card h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+    
+        /* 📱 RESPONSIVE LEADERBOARD TABLE: Eliminates mobile page cutoff issues */
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: 6px;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 550px; /* Guarantees structured spacing for compact phone viewports */
+        }
+    
+        th {
+            background: #f8fafc;
+            color: #0f172a;
+            padding: 12px 14px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border-color);
+        }
+    
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+    
+        /* Champions Row Layout */
+        .champ-row {
+            display: flex;
+            flex-direction: column; /* Stacks vertically on small phones */
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            background: #f8fafc;
+        }
+    
+        .champ-year {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+    
+        .champ-details {
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+    
+        /* 📱 ULTRALIGHT FLEXIBLE RECORDS GRID */
+        .records-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Defaults to single column for standard mobile phones */
+            gap: 15px;
+            width: 100%;
+        }
+    
+        .record-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-top: 4px solid var(--accent);
+            box-sizing: border-box;
+            width: 100%;
+        }
+    
+        .record-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+    
+        .record-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+    
+        .record-meta {
+            font-size: 0.85rem;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+    
+        /* Media query upgrade loop to handle standard desktop viewports and tablet monitors */
+        @media(min-width: 680px) {
+            .history-container { margin: 30px auto; }
+            h1 { font-size: 1.8rem; }
+            .card { padding: 24px; }
+            .tab-btn { padding: 10px 20px; font-size: 0.95rem; }
+            .champ-row { flex-direction: row; align-items: center; }
+            .champ-year { width: 80px; }
+            .records-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+            .record-box { padding: 20px; }
+            .record-value { font-size: 1.8rem; }
+        }
+    </style>
+
+</head>
+<body>
+
+<!-- Locked Pinned Navigation Header Bar (Responsive Mobile Swipe Menu) -->
+<div class="nav-bar">
+    <a href="index.html">Home Page</a>
+    <a href="keepers.html">Keeper Tracker</a>
+    <a href="standings.html">Standings</a>
+    <a href="rules.html">League Rules</a>
+    <a href="team-stat-page.html">Team Rosters</a>
+    <a href="history.html" class="active">League History</a>
+</div>
+
+<div class="history-container">
+    <h1>📜 League Record Book & History</h1>
+
+    <!-- Interactive View Tabs Layout -->
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="switchView('champs')">🏆 Hall of Fame</button>
+        <button class="tab-btn" onclick="switchView('leaderboard')">📊 Leaderboard</button>
+        <button class="tab-btn" onclick="switchView('records')">👑 Record Book</button>
+    </div>
+
+    <!-- VIEW 1: CHAMPIONS TIMELINE -->
+    <div id="view-champs" class="history-view active-view">
+        <div class="card">
+            <h2>League Champions Timeline</h2>
+            <div id="champsTimeline"></div>
+        </div>
+    </div>
+
+    <!-- VIEW 2: ALL-TIME LEADERBOARD -->
+    <div id="view-leaderboard" class="history-view">
+        <div class="card">
+            <h2>Cumulative Regular Season Standings</h2>
+            <div class="table-responsive-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">Manager</th>
+                            <th style="text-align: center;">Wins</th>
+                            <th style="text-align: center;">Losses</th>
+                            <th style="text-align: center;">Win Pct</th>
+                            <th style="text-align: right;">Total PF</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 3: LEAGUE RECORD BOOK -->
+    <div id="view-records" class="history-view">
+        <div class="records-grid" id="recordsGrid"></div>
+    </div>
+</div>
+    <script>
+        // Tab menu display switching loop engine
+        function switchView(viewName) {
+            document.querySelectorAll('.history-view').forEach(v => v.classList.remove('active-view'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('view-' + viewName).classList.add('active-view');
+            event.currentTarget.classList.add('active');
+        }
+    
+        let cumulativeStats = {}; 
+        let allTimeRecords = {
+            highest_season_pf: { value: 0, manager: "N/A", year: "N/A" },
+            most_season_wins: { value: 0, manager: "N/A", year: "N/A" }
+        };
+    
+        // Automated Backwards Loop Historical Traversal Engine
+        async function processLeagueHistory() {
+            try {
+                document.getElementById("champsTimeline").textContent = "Loading configuration...";
+    
+                const configRes = await fetch("config.json");
+                const configData = await configRes.json();
+                let currentLeagueId = configData.LEAGUE_ID;
+    
+                const historyMetadataRes = await fetch("league-history.json");
+                const historyMetadata = await historyMetadataRes.json();
+    
+                let leagueIdsToProcess = [];
+                let yearCursor = 2026; // Set current live system runtime year loop benchmark
+    
+                document.getElementById("champsTimeline").textContent = "Traversing historical chains across seasons...";
+    
+                // Loop backwards dynamically utilizing Sleeper's native linked property chain
+                while (currentLeagueId && currentLeagueId !== "0" && yearCursor >= 2024) {
+                    leagueIdsToProcess.push({ id: currentLeagueId, year: yearCursor });
+                    
+                    const leagueDetails = await fetch('https://api.sleeper.app/v1/league/' + currentLeagueId).then(r => r.json());
+                    currentLeagueId = leagueDetails.previous_league_id;
+                    yearCursor--;
+                }
+    
+                // Loop through gathered season IDs and aggregate statistics
+                for (const item of leagueIdsToProcess) {
+                    const [users, rosters] = await Promise.all([
+                        fetch('https://api.sleeper.app/v1/league/' + item.id + '/users').then(r => r.json()),
+                        fetch('https://api.sleeper.app/v1/league/' + item.id + '/rosters').then(r => r.json())
+                    ]);
+    
+                    let localUserMap = {};
+                    users.forEach(u => {
+                        localUserMap[u.user_id] = u.display_name || u.username;
+                    });
+    
+                    rosters.forEach(team => {
+                        const managerName = localUserMap[team.owner_id] || "Unknown Manager";
+                        const wins = team.settings?.wins || 0;
+                        const losses = team.settings?.losses || 0;
+                        const pf = (team.settings?.fpts || 0) + ((team.settings?.fpts_decimal || 0) / 100);
+    
+                        // A. Aggregate Regular Season Career Performance Metrics
+                        if (!cumulativeStats[managerName]) {
+                            cumulativeStats[managerName] = { wins: 0, losses: 0, total_pf: 0 };
+                        }
+                        cumulativeStats[managerName].wins += wins;
+                        cumulativeStats[managerName].losses += losses;
+                        cumulativeStats[managerName].total_pf += pf;
+    
+                        // B. Evaluate Single Season Benchmark High Records
+                        if (pf > allTimeRecords.highest_season_pf.value) {
+                            allTimeRecords.highest_season_pf = { value: pf, manager: managerName, year: item.year };
+                        }
+                        if (wins > allTimeRecords.most_season_wins.value) {
+                            allTimeRecords.most_season_wins = { value: wins, manager: managerName, year: item.year };
+                        }
+                    });
+                }
+    
+                // 1. Render View 1: Hall of Fame Timeline Card Rows (Fixed Object Loop)
+                const champsContainer = document.getElementById("champsTimeline");
+                champsContainer.innerHTML = "";
+                
+                // Check if the old array format exists inside the JSON structure
+                if (historyMetadata && historyMetadata.champions && Array.isArray(historyMetadata.champions)) {
+                    // Sort by year descending
+                    let sortedChamps = [...historyMetadata.champions].sort((a, b) => b.year - a.year);
+                    
+                    sortedChamps.forEach(c => {
+                        champsContainer.innerHTML += `
+                            <div class="champ-row">
+                                <div class="champ-year">${c.year}</div>
+                                <div class="champ-details">
+                                    🏆 <strong>${c.winner || 'Unknown'}</strong> (${c.team_name || 'N/A'}) <br>
+                                    <span style="color: var(--text-muted); font-size: 0.85rem;">
+                                        Runner Up: ${c.runner_up || 'N/A'} | 🚽 Sacko: ${c.sacko || 'N/A'}
+                                    </span>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    // Fallback check if it is formatted by nested year keys directly
+                    Object.keys(historyMetadata).sort((a,b) => b - a).forEach(year => {
+                        const c = historyMetadata[year];
+                        if (year !== "champions" && year !== "all_time_leaderboard" && year !== "records") {
+                            champsContainer.innerHTML += `
+                                <div class="champ-row">
+                                    <div class="champ-year">${year}</div>
+                                    <div class="champ-details">
+                                        🏆 <strong>${c.winner}</strong> (${c.team_name}) <br>
+                                        <span style="color: var(--text-muted); font-size: 0.85rem;">
+                                            Runner Up: ${c.runner_up} | 🚽 Sacko: ${c.sacko || 'N/A'}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+    
+                // 2. Render View 2: All-Time Standings Leaderboard Table rows
+                const leaderboardBody = document.getElementById("leaderboardBody");
+                leaderboardBody.innerHTML = "";
+                
+                let sortedManagers = Object.keys(cumulativeStats).map(name => {
+                    let m = cumulativeStats[name];
+                    let totalGames = m.wins + m.losses;
+                    let pct = totalGames > 0 ? (m.wins / totalGames) * 100 : 0;
+                    return { name, wins: m.wins, losses: m.losses, pct, total_pf: m.total_pf };
+                }).sort((a, b) => b.pct - a.pct);
+    
+                sortedManagers.forEach(m => {
+                    leaderboardBody.innerHTML += `
+                        <tr>
+                            <td><strong>${m.name}</strong></td>
+                            <td style="text-align: center; font-weight: 600;">${m.wins}</td>
+                            <td style="text-align: center; color: var(--text-muted);">${m.losses}</td>
+                            <td style="text-align: center; font-weight: 600; color: var(--accent);">${m.pct.toFixed(1)}%</td>
+                            <td style="text-align: right; font-weight: bold; font-variant-numeric: tabular-nums;">${m.total_pf.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+    
+                // 3. Render View 3: High-Impact Record Dashboard Blocks
+                const recordsGrid = document.getElementById("recordsGrid");
+                recordsGrid.innerHTML = `
+                    <div class="record-box">
+                        <h3>Most Points For (Season)</h3>
+                        <div class="record-value">${allTimeRecords.highest_season_pf.value.toFixed(2)}</div>
+                        <div class="record-meta">${allTimeRecords.highest_season_pf.manager} (${allTimeRecords.highest_season_pf.year})</div>
+                    </div>
+                    <div class="record-box">
+                        <h3>Most Wins (Season)</h3>
+                        <div class="record-value">${allTimeRecords.most_season_wins.value} Wins</div>
+                        <div class="record-meta">${allTimeRecords.most_season_wins.manager} (${allTimeRecords.most_season_wins.year})</div>
+                    </div>
+                `;
+    
+            } catch (error) {
+                console.error("History Engine Parse Exception Error:", error);
+                document.getElementById("champsTimeline").textContent = "Error loading automated historical league data records.";
+            }
+        }
+    
+        // Trigger loader engine loop on page initialization
+        window.addEventListener('DOMContentLoaded', processLeagueHistory);
+    </script>
+</body>
+</html>
