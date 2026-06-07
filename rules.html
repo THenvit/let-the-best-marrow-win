@@ -1,110 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>League Rules & Scoring</title>
-<style>
-body { font-family: Arial, sans-serif; background: #f5f7fa; color: #333; margin: 0; padding: 20px; }
-.container { max-width: 1000px; margin: auto; }
-.header { background: #1f2937; color: white; padding: 25px; border-radius: 10px; text-align: center; }
-.section { background: white; margin-top: 20px; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
-h2 { color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
-h3 { color: #4b5563; font-size: 16px; margin-top: 20px; margin-bottom: 10px; border-left: 4px solid #2563eb; padding-left: 8px; }
-.rule-box { background: #f9fafb; border-left: 4px solid #2563eb; padding: 12px; margin: 10px 0; }
-ul { line-height: 1.8; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <style>
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #1e3a8a;
+            --accent: #2563eb; /* True deep blue accent matching your doc rules */
+        }
+    
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding-top: 60px; /* Offset spacing context for fixed menu header bar */
+        }
+    
+        /* locked Fixed navigation element header layout */
+        .nav-bar {
+            background: #0f172a;
+            padding: 0 10px;
+            height: 50px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+    
+        .nav-bar::-webkit-scrollbar {
+            display: none;
+        }
+    
+        .nav-bar a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 6px;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+    
+        .nav-bar a:hover, .nav-bar a.active {
+            color: #ffffff;
+            background: var(--accent);
+        }
+    
+        .rules-container {
+            max-width: 900px; /* Slim reading track comfortable for long documents */
+            margin: 15px auto;
+            padding: 0 15px;
+            box-sizing: border-box;
+        }
+    
+        .rules-main-header {
+            background: #1f2937;
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    
+        .rules-main-header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin: 0 0 5px 0;
+        }
+    
+        .rules-main-header p {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+    
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+            width: 100%;
+        }
+    
+        .card h2 {
+            font-size: 1.2rem;
+            font-weight: bold; /* Bolded section titles */
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #1f2937;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+    
+        .rules-h3 {
+            color: #4b5563;
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 15px 0 8px 0;
+        }
+    
+        /* High contrast rule text accent frames */
+        .rule-box-accent {
+            background: #f9fafb;
+            border-left: 4px solid var(--accent);
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #374151;
+        }
+    
+        .rules-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #334155;
+        }
+    
+        .rules-list li {
+            margin-bottom: 10px;
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+    
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-top: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+    
+        .rules-mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #f8fafc;
+            min-width: 350px;
+        }
+    
+        .rules-mini-table th {
+            background: #e2e8f0;
+            color: #0f172a;
+            padding: 10px 14px;
+            font-weight: bold; /* Bolded table headers */
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            text-align: left;
+        }
+    
+        .rules-mini-table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+    
+        /* 📱 DYNAMIC SCORING GRID SYSTEM */
+        .scoring-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+    
+        .scoring-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+    
+        .scoring-label {
+            font-weight: 600;
+            color: #4b5563;
+            font-size: 0.9rem;
+        }
+    
+        .scoring-value {
+            background: var(--accent);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.82rem;
+            white-space: nowrap;
+        }
+    
+        .loading-text {
+            font-style: italic;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+    
+        @media(min-width: 680px) {
+            .rules-container { margin: 30px auto; }
+            .rules-main-header { padding: 25px; }
+            .rules-main-header h1 { font-size: 1.8rem; }
+            .card { padding: 24px; }
+            .scoring-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        }
+    </style>
 
-/* Dynamic Scoring Table Layout */
-.scoring-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; margin-bottom: 15px; }
-.scoring-card { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; }
-.scoring-label { font-weight: 600; color: #4b5563; font-size: 14px; }
-.scoring-value { background: #2563eb; color: white; padding: 2px 8px; border-radius: 4px; font-weight: bold; font-size: 13px; }
-.loading-text { font-style: italic; color: #6b7280; }
-</style>
+    <title>League Rules & Scoring - Flip Off Whatnot</title>
 </head>
-
 <body>
-      
- <div style="margin-bottom:20px;">
-    <a href="index.html">Home Page</a> |
-    <a href="keepers.html">Keeper Tracker</a> |
-    <a href="standings.html">Standings</a> |
-    <a href="rules.html">League Rules</a> |
-    <a href="team-stat-page.html">Team Rosters</a>
-</div>
-    
-    
-<div class="container">
 
-    <div class="header">
+<!-- Pinned Navigation Header Bar (Responsive Mobile Swipe Menu) -->
+<div class="nav-bar">
+    <a href="index.html">Home Page</a>
+    <a href="keepers.html">Keeper Tracker</a>
+    <a href="standings.html">Standings</a>
+    <a href="rules.html" class="active">League Rules</a>
+    <a href="team-stat-page.html">Team Rosters</a>
+    <a href="history.html">League History</a>
+</div>
+
+<div class="rules-container">
+    <div class="rules-main-header">
         <h1>🏈 Flip Off Whatnot - League Rules & Scoring</h1>
         <p>12-Team Sleeper League | Full PPR | Snake Draft</p>
     </div>
 
-    <div class="section">
-        <h2>League Overview</h2>
-        <ul>
-            <li>Platform: Sleeper</li>
-            <li>Teams: 12</li>
-            <li>Scoring: Full PPR</li>
-            <li>Draft Format: Snake Draft</li>
+    <!-- ADDED SECTION: Financials -->
+    <div class="card">
+        <h2>Buy-In & Financials</h2>
+        <ul class="rules-list">
+            <li><strong>Annual Buy-In:</strong> $50 per manager. All dues must be paid via LeagueSafe prior to the draft.</li>
+            <li><strong>Payout Structure:</strong>
+                <div class="table-responsive-wrapper">
+                    <table class="rules-mini-table">
+                        <thead>
+                            <tr>
+                                <th>Placement</th>
+                                <th style="text-align: right;">Payout Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>🏆 <strong>League Champion (1st)</strong></td>
+                                <td style="text-align: right; font-weight: bold; color: var(--accent);">$400</td>
+                            </tr>
+                            <tr>
+                                <td>🥈 <strong>Runner-Up (2nd)</strong></td>
+                                <td style="text-align: right; font-weight: bold;">$200</td>
+                            </tr>
+                            <tr>
+                                <td>🥉 <strong>Third Place (3rd)</strong></td>
+                                <td style="text-align: right; font-weight: bold;">Pat on the back</td>
+                            </tr>
+                            <tr>
+                                <td>🚽 <strong>Last Place</strong></td>
+                                <td style="text-align: right; font-weight: bold; color: var(--primary);">Flip's Used Socks</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </li>
         </ul>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: League Overview -->
+    <div class="card">
+        <h2>League Overview</h2>
+        <ul class="rules-list">
+            <li><strong>Platform:</strong> Sleeper</li>
+            <li><strong>Teams:</strong> 12</li>
+            <li><strong>Scoring:</strong> Full PPR</li>
+            <li><strong>Draft Format:</strong> Snake Draft</li>
+        </ul>
+    </div>
+
+    <!-- RESTORED: Keeper Structure -->
+    <div class="card">
         <h2>Keeper Structure</h2>
-        <div class="rule-box">
+        <div class="rule-box-accent">
             Each team may keep:
-            <ul>
+            <ul style="margin-top: 5px; margin-bottom: 0;">
                 <li>1 Rookie Keeper</li>
                 <li>1 Open Keeper (any eligible player)</li>
             </ul>
         </div>
-        <div class="rule-box">
+        <p style="margin-top: 10px; margin-bottom: 0; font-size: 0.95rem;">
             Managers may keep fewer than two players but may not exceed two keepers.
-        </div>
+        </p>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: Keeper Eligibility -->
+    <div class="card">
         <h2>Keeper Eligibility</h2>
-        <h3>Rookie Keeper</h3>
-        <p>Must have entered the NFL as a rookie during the previous season and be on the manager's roster at season end.</p>
-        <h3>Open Keeper</h3>
-        <p>Any eligible player on a manager's final roster may be selected.</p>
+        <h3 class="rules-h3">Rookie Keeper</h3>
+        <p style="font-size: 0.95rem; margin: 0 0 15px 0;">Must have entered the NFL as a rookie during the previous season and be on the manager's roster at season end.</p>
+        
+        <h3 class="rules-h3">Open Keeper</h3>
+        <p style="font-size: 0.95rem; margin: 0;">Any eligible player on a manager's final roster may be selected.</p>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: Keeper Cost -->
+    <div class="card">
         <h2>Keeper Cost</h2>
-        <div class="rule-box">A keeper costs the draft round in which the player was originally selected.</div>
-        <p><strong>Example:</strong></p>
-        <ul>
+        <div class="rule-box-accent">A keeper costs the draft round in which the player was originally selected.</div>
+        <p style="margin-bottom: 5px;"><strong>Example:</strong></p>
+        <ul class="rules-list">
             <li>Drafted Round 8</li>
             <li>Kept Next Season = Round 8 Cost</li>
         </ul>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: Keeper Escalation -->
+    <div class="card">
         <h2>Keeper Escalation</h2>
-        <div class="rule-box">Players may be kept for a maximum of two consecutive seasons.</div>
-        <p><strong>The additional keeper season costs are calculated based on original round drafted as follows:</strong></p>
-        <ul>    
-                <li>Round 4 to Round 14 or Free Agent/Waiver: Automatic 3rd Round Pick</li>
-                <li>Round 3: 2nd Round Pick</li>
-                <li>Round 2: 1st Round Pick</li>
-                <li>Round 1: Ineligible Keeper</li>
+        <div class="rule-box-accent">Players may be kept for a maximum of two consecutive seasons.</div>
+        <p style="margin-bottom: 10px;"><strong>The additional keeper season costs are calculated based on original round drafted as follows:</strong></p>
+        <ul class="rules-list">
+            <li>Round 4 to Round 14 or Free Agent/Waiver: Automatic 3rd Round Pick</li>
+            <li>Round 3: 2nd Round Pick</li>
+            <li>Round 2: 1st Round Pick</li>
+            <li>Round 1: Ineligible Keeper</li>
         </ul>
-        <p><strong>Example:</strong></p>
-        <ul>
+        <p style="margin-top: 15px; margin-bottom: 5px;"><strong>Example:</strong></p>
+        <ul class="rules-list">
             <li>2026 Draft: Round 10</li>
             <li>2027 Keeper: Round 10</li>
-            <li>2028 Keeper: Round 9</li>
+            <li>2028 Keeper: Round 3</li>
             <li>Returns to draft pool in 2029</li>
         </ul>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: Misc Keeper Rules -->
+    <div class="card">
+        <h2>Misc. Keeper Rules</h2>
+        <div class="rule-box-accent">Two Keepers with same draft round cost.</div>
+        <p style="margin-bottom: 10px;"><strong>If both your keepers would have the same Keeper Cost, the cost for the second would be one round earlier than original cost:</strong></p>
+        <p style="margin-bottom: 5px;"><strong>Example:</strong></p>
+        <ul class="rules-list">
+            <li>Keeping Player A for the 2nd time: Costs 3rd Round Pick</li>
+            <li>Keeping Player B from previous year 3rd round pick: Costs 3rd Round Pick</li>
+            <li>Cost to keep both players: 2nd Round and 3rd round pick</li>
+            <li><strong>Note:</strong> If both players would cost a 1st round pick you may not keep both.</li>
+        </ul>
+    </div>
+
+    <!-- RESTORED: Trades -->
+    <div class="card">
         <h2>Trades</h2>
-        <ul>
+        <ul class="rules-list">
             <li>Keeper rights transfer with the player.</li>
             <li>Keeper value remains unchanged after a trade.</li>
             <li>Keeper history also transfers.</li>
@@ -112,20 +373,23 @@ ul { line-height: 1.8; }
         </ul>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: Waivers & Free Agents -->
+    <div class="card">
         <h2>Waivers & Free Agents</h2>
-        <div class="rule-box">Waiver and free-agent pickups receive a keeper value equal to the final draft round.</div>
-        <p>Example: An undrafted player picked up during the season can be kept using the manager's last-round draft pick.</p>
+        <div class="rule-box-accent">Waiver and free-agent pickups receive a keeper value equal to the final draft round.</div>
+        <p style="margin: 0; font-size: 0.95rem;"><strong>Example:</strong> An undrafted player picked up during the season can be kept using the manager's last-round draft pick.</p>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: Keeper Deadline -->
+    <div class="card">
         <h2>Keeper Deadline</h2>
-        <p>All keeper selections must be submitted one week before the annual draft.</p>
+        <p style="margin: 0; font-size: 0.95rem;">All keeper selections must be submitted one week before the annual draft.</p>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: Competitive Integrity -->
+    <div class="card">
         <h2>Competitive Integrity</h2>
-        <ul>
+        <ul class="rules-list">
             <li>No collusion.</li>
             <li>No intentional tanking.</li>
             <li>Managers must set active lineups.</li>
@@ -133,130 +397,130 @@ ul { line-height: 1.8; }
         </ul>
     </div>
 
-    <div class="section">
+    <!-- RESTORED: Rule Changes -->
+    <div class="card">
         <h2>Rule Changes</h2>
-        <ul>
+        <ul class="rules-list">
             <li>Standard rule changes require majority approval.</li>
             <li>Keeper rule changes require a two-thirds majority.</li>
             <li>Rule changes are not retroactive unless unanimously approved.</li>
         </ul>
     </div>
 
-    <!-- RESTRUCTURED SECTION: Ordered & Categorized Scoring Rules -->
-    <div class="section">
+    <!-- RESTORED: Dynamic Live Scoring Interface -->
+    <div class="card">
         <h2>Live Scoring Settings</h2>
         <div id="scoring-status" class="loading-text">Connecting to your Sleeper League configurations...</div>
         
-        <div id="passing-title" style="display:none;"><h3>Passing</h3></div>
+        <div id="passing-title" style="display:none;"><h3 class="rules-h3" style="border-left: 4px solid #2563eb; padding-left: 8px;">Passing</h3></div>
         <div id="passing-container" class="scoring-grid"></div>
-
-        <div id="rushing-title" style="display:none;"><h3>Rushing</h3></div>
+        
+        <div id="rushing-title" style="display:none;"><h3 class="rules-h3" style="border-left: 4px solid #2563eb; padding-left: 8px;">Rushing</h3></div>
         <div id="rushing-container" class="scoring-grid"></div>
-
-        <div id="receiving-title" style="display:none;"><h3>Receiving</h3></div>
+        
+        <div id="receiving-title" style="display:none;"><h3 class="rules-h3" style="border-left: 4px solid #2563eb; padding-left: 8px;">Receiving</h3></div>
         <div id="receiving-container" class="scoring-grid"></div>
-
-        <div id="misc-title" style="display:none;"><h3>Misc</h3></div>
+        
+        <div id="misc-title" style="display:none;"><h3 class="rules-h3" style="border-left: 4px solid #2563eb; padding-left: 8px;">Misc</h3></div>
         <div id="misc-container" class="scoring-grid"></div>
     </div>
-
 </div>
+<script>
+ // Configuration: Loads ID value directly from your unified config repository file
+ let RULES_LEAGUE_ID = "";
 
-    <script>
-    // CONFIGURATION: Replace with your actual 18-digit Sleeper League ID
-    const RULES_LEAGUE_ID = "1181333596013768704";
+ // Strictly ordered array groups specifying display sequences matching your document layout rules
+ const passingOrder = ["pass_yd", "pass_td", "pass_2pt", "pass_int"];
+ const rushingOrder = ["rush_yd", "rush_td", "rush_2pt"];
+ const receivingOrder = ["rec_yd", "rec_td", "rec_2pt"];
+ const miscOrder = ["fum_lost", "fum_rec_td"];
 
-    // Strictly ordered array groups specifying chronological display hierarchy layout sequence maps
-    const passingOrder = ["pass_yd", "pass_td", "pass_2pt", "pass_int"];
-    const rushingOrder = ["rush_yd", "rush_td", "rush_2pt"];
-    const receivingOrder = ["rec_yd", "rec_td", "rec_2pt"];
-    const miscOrder      = ["fum_lost", "fum_rec_td"];
+ // Clean English translation reference maps
+ const scoringTranslationMap = {
+     "pass_yd": "Passing Yards",
+     "pass_td": "Passing TD",
+     "pass_2pt": "Passing 2-PT Conversion",
+     "pass_int": "Pass Intercepted",
+     "rush_yd": "Rushing Yards",
+     "rush_td": "Rushing TD",
+     "rush_2pt": "Rushing 2-PT Conversion",
+     "rec_yd": "Receiving Yards",
+     "rec_td": "Receiving TD",
+     "rec_2pt": "Receiving 2-PT Conversion",
+     "fum_lost": "Fumble Lost",
+     "fum_rec_td": "Fumble Recovery TD"
+ };
 
-    // Clean English translation map filter parameters
-    const scoringTranslationMap = {
-        "pass_yd": "Passing Yards",
-        "pass_td": "Passing TD",
-        "pass_2pt": "Passing 2-PT Conversion",
-        "pass_int": "Pass Intercepted",
-        "rush_yd": "Rushing Yards",
-        "rush_td": "Rushing TD",
-        "rush_2pt": "Rushing 2-PT Conversion",
-        "rec_yd": "Receiving Yards",
-        "rec_td": "Receiving TD",
-        "rec_2pt": "Receiving 2-PT Conversion",
-        "fum_lost": "Fumble Lost",
-        "fum_rec_td": "Fumble Recovery TD"
-    };
+ async function fetchScoringSettings() {
+     const statusDiv = document.getElementById('scoring-status');
+     try {
+         // Read your central configuration file layout state
+         const configRes = await fetch("config.json");
+         const configData = await configRes.json();
+         RULES_LEAGUE_ID = configData.LEAGUE_ID;
 
-    async function fetchScoringSettings() {
-        const statusDiv = document.getElementById('scoring-status');
-        
-        if (RULES_LEAGUE_ID === "YOUR_SLEEPER_LEAGUE_ID_HERE") {
-            statusDiv.innerText = "Error: Please edit rules.html and update the RULES_LEAGUE_ID variable.";
-            return;
-        }
+         if (!RULES_LEAGUE_ID) {
+             statusDiv.innerText = "Error: LEAGUE_ID variable missing from config.json.";
+             return;
+         }
 
-        try {
-            const response = await fetch(`https://api.sleeper.app/v1/league/${RULES_LEAGUE_ID}`);
-            const leagueData = await response.json();
-            const scoring = leagueData.scoring_settings || {};
-            
-            // Clear loading diagnostic text
-            statusDiv.innerText = "";
+         // Pull live scoring parameters from Sleeper's core web server
+         const response = await fetch('https://api.sleeper.app/v1/league/' + RULES_LEAGUE_ID);
+         const leagueData = await response.json();
+         const scoring = leagueData.scoring_settings || {};
+         
+         statusDiv.style.display = "none"; // Clear connecting text slot
 
-            // Helper rendering processor loop
-            const renderGroup = (orderedKeys, containerId, titleId) => {
-                const container = document.getElementById(containerId);
-                const titleBlock = document.getElementById(titleId);
-                let hasItems = false;
+         // Inner rendering processor loop engine
+         const renderGroup = (orderedKeys, containerId, titleId) => {
+             const container = document.getElementById(containerId);
+             const titleBlock = document.getElementById(titleId);
+             let hasItems = false;
 
-                orderedKeys.forEach(key => {
-                    // Check if setting is active in this specific league layout setup configuration
-                    if (scoring[key] !== undefined && scoringTranslationMap[key]) {
-                        hasItems = true;
-                        let rawValue = scoring[key];
-                        let displayValue = rawValue;
+             orderedKeys.forEach(key => {
+                 if (scoring[key] !== undefined && scoringTranslationMap[key]) {
+                     hasItems = true;
+                     let rawValue = scoring[key];
+                     let displayValue = rawValue;
 
-                        // Formatting check converting yards decimals to clean yard totals
-                        if ((key === "pass_yd" || key === "rush_yd" || key === "rec_yd") && rawValue > 0 && rawValue < 1) {
-                            displayValue = `1 pt per ${Math.round(1 / rawValue)} yds`;
-                        } else {
-                            displayValue = rawValue >= 0 ? `+${rawValue} pts` : `${rawValue} pts`;
-                        }
+                     // Format fractional scoring decimals to transparent yard totals
+                     if ((key === "pass_yd" || key === "rush_yd" || key === "rec_yd") && rawValue > 0 && rawValue < 1) {
+                         displayValue = "1 pt per " + Math.round(1 / rawValue) + " yds";
+                     } else {
+                         displayValue = rawValue >= 0 ? "+" + rawValue + " pts" : rawValue + " pts";
+                     }
 
-                        // Also append clean contextual baseline tags for clarity
-                        let labelText = scoringTranslationMap[key];
-                        if (key === "pass_int") displayValue = `${rawValue} pts`;
+                     if (key === "pass_int") displayValue = rawValue + " pts";
 
-                        const card = document.createElement('div');
-                        card.className = 'scoring-card';
-                        card.innerHTML = `
-                            <span class="scoring-label">${labelText}</span>
-                            <span class="scoring-value">${displayValue}</span>
-                        `;
-                        container.appendChild(card);
-                    }
-                });
+                     const card = document.createElement('div');
+                     card.className = 'scoring-card';
+                     card.innerHTML = `
+                         <span class="scoring-label">${scoringTranslationMap[key]}</span>
+                         <span class="scoring-value">${displayValue}</span>
+                     `;
+                     container.appendChild(card);
+                 }
+             });
 
-                // If items are verified active, uncover header block titles
-                if (hasItems && titleBlock) {
-                    titleBlock.style.display = "block";
-                }
-            };
+             if (hasItems && titleBlock) {
+                 titleBlock.style.display = "block";
+             }
+         };
 
-            // Execute isolated chronological render sequences across groups
-            renderGroup(passingOrder, "passing-container", "passing-title");
-            renderGroup(rushingOrder, "rushing-container", "rushing-title");
-            renderGroup(receivingOrder, "receiving-container", "receiving-title");
-            renderGroup(miscOrder, "misc-container", "misc-title");
+         // Execute independent rendering matrices across position tables
+         renderGroup(passingOrder, "passing-container", "passing-title");
+         renderGroup(rushingOrder, "rushing-container", "rushing-title");
+         renderGroup(receivingOrder, "receiving-container", "receiving-title");
+         renderGroup(miscOrder, "misc-container", "misc-title");
 
-        } catch (error) {
-            console.error(error);
-            statusDiv.innerText = "Failed to sync rules from Sleeper API. Verify network status and League ID.";
-        }
-    }
+     } catch (error) {
+         console.error(error);
+         statusDiv.innerText = "Failed to sync live rules from Sleeper API. Verify config file status.";
+     }
+ }
 
-    window.addEventListener('DOMContentLoaded', fetchScoringSettings);
+ window.addEventListener('DOMContentLoaded', fetchScoringSettings);
 </script>
+
 </body>
 </html>
