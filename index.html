@@ -1,124 +1,292 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Let The Best Marrow Win - League Dashboard</title>
 
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
-    margin: 20px;
-}
+    :root {
+        --bg-color: #f1f5f9;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --primary: #1e3a8a;
+        --accent: #3b82f6;
+    }
 
-h1 {
-    color: #222;
-}
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-main);
+        margin: 0;
+        padding-top: 60px; /* Offset for pinned nav */
+    }
 
-.card {
-    background: white;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,.1);
-}
+    /* 📱 FIXED MOBILE NAV BAR: Allows safe horizontal swipe-scrolling */
+    .nav-bar {
+        background: #0f172a;
+        padding: 0 10px;
+        height: 50px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        overflow-x: auto; /* Forces scrolling when elements overflow mobile screens */
+        white-space: nowrap; /* Prevents text elements from breaking onto secondary vertical lines */
+        -webkit-overflow-scrolling: touch; /* High-performance momentum scroll for iOS mobile devices */
+    }
 
-/* Updated Table Layout Elements */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
+    /* Hides the desktop browser scrollbar across nav headers to maintain a native app feel */
+    .nav-bar::-webkit-scrollbar {
+        display: none;
+    }
 
-th {
-    background: #1f2937;
-    color: white;
-    padding: 12px 10px;
-    font-weight: 600;
-}
+    .nav-bar a {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 6px 12px;
+        border-radius: 6px;
+        display: inline-block;
+        flex-shrink: 0; /* Prevents text squishing inside small containers */
+    }
 
-td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
-}
+    .nav-bar a:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
+    }
 
-/* Explicit Alignment Rules */
-.col-team {
-    text-align: left;
-    width: 50%;
-}
+    .nav-bar a.active {
+        color: #ffffff;
+        background: var(--accent);
+    }
 
-.col-record {
-    text-align: center;
-    width: 25%;
-}
+    /* Fluid Dashboard Main Container */
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 15px auto;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
 
-.col-pf {
-    text-align: right;
-    width: 25%;
-    font-variant-numeric: tabular-nums; /* Keeps numbers perfectly stacked */
-}
+    h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 20px;
+        word-break: break-word; /* Prevents header overlap cuts */
+    }
 
-tr:hover {
-    background-color: #f8fafc;
-}
+    .card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color);
+        box-sizing: border-box;
+        width: 100%;
+    }
 
-.roster {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 15px;
-}
+    .card h2 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #0f172a;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+    }
 
-.team-card {
-    background: white;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 6px rgba(0,0,0,.1);
-}
+    /* 📱 RESPONSIVE STANDINGS TABLE: Eliminates desktop page cutoff issues */
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 6px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 500px; /* Guarantees structured spacing for compact phone viewports */
+    }
+
+    th {
+        background: #f8fafc;
+        color: #0f172a;
+        padding: 12px 10px;
+        font-weight: bold;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+    }
+
+    tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    .col-team { text-align: left; width: 50%; color: var(--primary); font-size: 0.88rem; word-break: break-word; }
+    .col-record { text-align: center; width: 25%; font-weight: 600; }
+    .col-pf { text-align: right; width: 25%; font-variant-numeric: tabular-nums; }
+
+    /* 📱 ULTRALIGHT FLEXIBLE ROSTER DEPTH CHART GRID */
+    .roster-grid {
+        display: grid;
+        grid-template-columns: 1fr; /* Defaults to single column for standard mobile phones */
+        gap: 15px;
+        width: 100%;
+    }
+
+    /* Media query upgrade step path for tablet/desktop viewports */
+    @media(min-width: 680px) {
+        .roster-grid {
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Auto-wraps when screen room permits */
+        }
+        .card { padding: 24px; }
+        h1 { font-size: 1.8rem; }
+    }
+
+    .team-roster-box {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .team-roster-header {
+        background: #f8fafc;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-color);
+        border-left: 4px solid var(--accent);
+    }
+
+    .team-roster-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0f172a;
+        word-break: break-word;
+    }
+
+    .roster-mini-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .roster-mini-table tr:nth-child(even) {
+        background-color: #fcfdfe;
+    }
+
+    .roster-mini-table td {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .bench-divider {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: center;
+        padding: 6px 12px !important;
+    }
+
+    /* Position pills styling */
+    .pos-pill {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: white;
+        text-align: center;
+        min-width: 30px;
+        box-sizing: border-box;
+    }
+    .pos-QB  { background-color: #dc2626; }
+    .pos-RB  { background-color: #2563eb; }
+    .pos-WR  { background-color: #16a34a; }
+    .pos-TE  { background-color: #ea580c; }
+    .pos-K   { background-color: #7c3aed; }
+    .pos-DEF { background-color: #4b5563; }
 </style>
+
 
 </head>
 
 <body>
     
- <div style="margin-bottom:20px;">
-    <a href="index.html">Home Page</a> |
-    <a href="standings.html">Standings</a> |
-    <a href="rules.html">League Rules</a> |
+<!-- Upgraded Navigation Bar -->
+<div class="nav-bar">
+    <a href="index.html" class="active">Home Page</a>
+    <a href="keepers.html">Keeper Tracker</a>
+    <a href="standings.html">Standings</a>
+    <a href="rules.html">League Rules</a>
     <a href="team-stat-page.html">Team Rosters</a>
+    <a href="history.html">League History</a>
 </div>
     
-<h1>🏈 Let The Best Marrow Win - League Dashboard</h1>
+<div class="dashboard-container">
+    <h1>🏈 Flip Off Whatnot League Dashboard</h1>
 
-<div class="card">
-    <table id="standings">
-<div class="card">
-    <h2>Standings</h2>
-    <table id="standings">
-        <thead>
-            <tr>
-                <th class="col-team">Team</th>
-                <th class="col-record">Record</th>
-                <th class="col-pf">PF</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <!-- Standings Card -->
+    <!-- Fixed Standings Section with Scroll Wrappers -->
+    <div class="card">
+        <h2>Standings</h2>
+        <div class="table-responsive-wrapper">
+            <table id="standings">
+                <thead>
+                    <tr>
+                        <th class="col-team">Team</th>
+                        <th class="col-record">Record</th>
+                        <th class="col-pf">PF</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Redesigned Depth-Chart Roster Card Grid -->
+    <div class="card">
+        <h2>Rosters</h2>
+        <div class="roster-grid" id="rosters">
+            <!-- Populated via JS -->
+        </div>
+    </div>
 </div>
 
-        <tbody></tbody>
-    </table>
-</div>
-
-<div class="card">
-    <h2>Rosters</h2>
-    <div class="roster" id="rosters"></div>
-</div>
 
 <script>
-
 // Global variable loaded dynamically from config.json
 let LEAGUE_ID = "";
+
+// Helper array to sort roster tables logically by starting positional priority
+const positionOrder = ["QB", "RB", "WR", "TE", "K", "DEF"];
 
 async function loadLeague() {
     try {
@@ -131,10 +299,11 @@ async function loadLeague() {
             throw new Error("LEAGUE_ID missing from config.json");
         }
 
-        // 2. Fetch data assets concurrently (Using local daily player cache file)
-        const usersUrl = 'https://api.sleeper.app/v1/league/' + LEAGUE_ID + '/users';
-        const rostersUrl = 'https://api.sleeper.app/v1/league/' + LEAGUE_ID + '/rosters';
-        const masterPlayersUrl = 'public/players.json'; // Faster execution using your local daily cron asset
+        // 2. Construct exact API endpoints securely using standard concatenation
+        const baseUrl = 'https://api.sleeper.app/v1/league/' + LEAGUE_ID;
+        const usersUrl = baseUrl + '/users';
+        const rostersUrl = baseUrl + '/rosters';
+        const masterPlayersUrl = 'public/players.json'; 
 
         const [usersRes, rostersRes, masterPlayersRes] = await Promise.all([
             fetch(usersUrl),
@@ -146,24 +315,30 @@ async function loadLeague() {
         const rosters = await rostersRes.json();
         const players = await masterPlayersRes.json();
 
-        const ownerMap = {};
+        // 3. Establish owner username maps and combined display titles
+        const rawOwnerMap = {};
+        const fullDisplayMap = {};
 
         users.forEach(user => {
-            ownerMap[user.user_id] =
-                user.metadata?.team_name ||
-                user.display_name;
+            const userName = user.display_name || user.username || "Unknown Owner";
+            rawOwnerMap[user.user_id] = userName;
+            
+            if (user.metadata && user.metadata.team_name) {
+                fullDisplayMap[user.user_id] = user.metadata.team_name + " (" + userName + ")";
+            } else {
+                fullDisplayMap[user.user_id] = userName;
+            }
         });
 
-        // Safe sorting equation using logical zero default switches
+        // 4. Sort standings by total points scored
         rosters.sort((a,b) => {
             const scoreA = (a.settings?.fpts || 0) + ((a.settings?.fpts_decimal || 0) / 100);
             const scoreB = (b.settings?.fpts || 0) + ((b.settings?.fpts_decimal || 0) / 100);
             return scoreB - scoreA;
         });
 
-        const standingsBody =
-            document.querySelector("#standings tbody");
-
+        // 5. Render the Standings Table
+        const standingsBody = document.querySelector("#standings tbody");
         standingsBody.innerHTML = "";
 
         rosters.forEach(team => {
@@ -173,36 +348,92 @@ async function loadLeague() {
             
             const wins = team.settings?.wins || 0;
             const losses = team.settings?.losses || 0;
-            const ownerName = ownerMap[team.owner_id] || "Unknown Team";
+            const customDisplayName = fullDisplayMap[team.owner_id] || ("Team " + team.roster_id);
 
             standingsBody.innerHTML += `
                 <tr>
-                    <td class="col-team"><strong>${ownerName}</strong></td>
+                    <td class="col-team"><strong>${customDisplayName}</strong></td>
                     <td class="col-record">${wins}-${losses}</td>
                     <td class="col-pf"><strong>${points.toFixed(2)}</strong></td>
                 </tr>
             `;
         });
 
-        const rosterContainer =
-            document.getElementById("rosters");
-
+        // 6. Render the Redesigned Depth-Chart Roster Cards
+        const rosterContainer = document.getElementById("rosters");
         rosterContainer.innerHTML = "";
 
         rosters.forEach(team => {
-            const rosterPlayers = team.players || [];
-            const ownerName = ownerMap[team.owner_id] || "Unknown Team";
+            const customDisplayName = fullDisplayMap[team.owner_id] || ("Team " + team.roster_id);
+            
+            const starterIds = team.starters || [];
+            const allPlayerIds = team.players || [];
+            
+            // Map full player data objects from your local cron job file cache
+            let startersList = starterIds.map(id => players[id]).filter(p => p !== undefined);
+            
+            // Isolate bench players by excluding active starting slot IDs
+            let benchList = allPlayerIds
+                .filter(id => !starterIds.includes(id))
+                .map(id => players[id])
+                .filter(p => p !== undefined);
 
-            const playerNames =
-                rosterPlayers
-                    .slice(0,20)
-                    .map(id => players[id]?.full_name || id)
-                    .join("<br>");
+            // Positional sorting comparator function
+            const sortPositions = (a, b) => {
+                let indexA = positionOrder.indexOf(a.position);
+                let indexB = positionOrder.indexOf(b.position);
+                if (indexA === -1) indexA = 99;
+                if (indexB === -1) indexB = 99;
+                return indexA - indexB;
+            };
 
+            startersList.sort(sortPositions);
+            benchList.sort(sortPositions);
+
+            // Generate HTML markup strings for starter lists
+            let playerRowsHtml = "";
+            startersList.forEach(p => {
+                const posClass = "pos-" + (p.position || "DEF");
+                playerRowsHtml += `
+                    <tr>
+                        <td style="width: 50px;"><span class="pos-pill ${posClass}">${p.position || "DEF"}</span></td>
+                        <td><strong>${p.full_name}</strong></td>
+                        <td style="text-align: right; color: var(--text-muted); font-size: 0.8rem;">${p.team || "FA"}</td>
+                    </tr>
+                `;
+            });
+
+            // Append Bench Divider and calculate bench player elements
+            if (benchList.length > 0) {
+                playerRowsHtml += `
+                    <tr>
+                        <td colspan="3" class="bench-divider">Bench Players</td>
+                    </tr>
+                `;
+                
+                benchList.forEach(p => {
+                    const posClass = "pos-" + (p.position || "DEF");
+                    playerRowsHtml += `
+                        <tr>
+                            <td style="width: 50px;"><span class="pos-pill ${posClass}">${p.position || "DEF"}</span></td>
+                            <td style="color: #4b5563;">${p.full_name}</td>
+                            <td style="text-align: right; color: var(--text-muted); font-size: 0.8rem;">${p.team || "FA"}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Inject the complete table assembly into your grid layout
             rosterContainer.innerHTML += `
-                <div class="team-card">
-                    <h3>${ownerName}</h3>
-                    <p>${playerNames}</p>
+                <div class="team-roster-box">
+                    <div class="team-roster-header">
+                        <h3>${customDisplayName}</h3>
+                    </div>
+                    <table class="roster-mini-table">
+                        <tbody>
+                            ${playerRowsHtml || '<tr><td colspan="3">No Players Rostered</td></tr>'}
+                        </tbody>
+                    </table>
                 </div>
             `;
         });
@@ -211,10 +442,10 @@ async function loadLeague() {
     }
 }
 
-// Boot page execution
+// Initial engine execution bootstrap and auto-refresh intervals
 loadLeague();
 setInterval(loadLeague, 300000);
-
 </script>
+
 </body>
 </html>
