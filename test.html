@@ -242,7 +242,7 @@
 <!-- Upgraded Navigation Bar -->
 <div class="nav-bar">
     <a href="index.html" class="active">Home Page</a>
-    <!--<a href="keepers.html">Keeper Tracker</a>-->
+    <a href="keepers.html">Keeper Tracker</a>
     <a href="standings.html">Standings</a>
     <a href="power-rankings.html">Power Rankings</a>
     <a href="rules.html">League Rules</a>
@@ -264,7 +264,7 @@
                         <th class="col-team">Team</th>
                         <th class="col-record">Record</th>
                         <th class="col-pf">PF</th>
-                        <th class="col-faab">FAAB</th>
+                        <th class="col-faab" id="headerFaab">FAAB</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -425,6 +425,19 @@ async function loadLeague() {
         if (!LEAGUE_ID) {
             throw new Error("LEAGUE_ID missing from config.json");
         }
+        
+        TOTAL_FAAB_BUDGET = configData.TOTAL_FAAB_BUDGET || 100;
+
+        // Multi-League UI Toggles: Hides keepers or FAAB elements dynamically
+        if (configData.HAS_KEEPERS === false) {
+            const keeperLinks = document.querySelectorAll('.nav-bar a[href="keepers.html"]');
+            keeperLinks.forEach(link => link.style.display = 'none');
+        }
+        if (configData.HAS_FAAB === false) {
+            const faabHeaders = document.querySelectorAll('.col-faab');
+            faabHeaders.forEach(el => el.style.display = 'none');
+        }
+        
         // 2. Fetch the current NFL league state to find out what week we are in dynamically
         const stateRes = await fetch(" https://api.sleeper.app/v1/state/nfl");
         const stateData = await stateRes.json();
@@ -626,13 +639,16 @@ async function loadLeague() {
             // Calculate FAAB tracking metrics
             const faabUsed = team.settings?.waiver_budget_used || 0;
             const faabRemaining = TOTAL_FAAB_BUDGET - faabUsed;
+            const faabCellHtml = configData.HAS_FAAB 
+                ? `<td class="col-faab">$${faabRemaining}</td>` 
+                : '';
 
             standingsBody.innerHTML += `
                 <tr>
                     <td class="col-team"><strong>${customDisplayName}</strong></td>
                     <td class="col-record">${wins}-${losses}</td>
                     <td class="col-pf"><strong>${points.toFixed(2)}</strong></td>
-                    <td class="col-faab">$${faabRemaining}</td>
+                    ${faabCellHtml}
                 </tr>
             `;
         });
