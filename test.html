@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flip Off Whatnot - League Dashboard</title>
+
+<style>
+    :root {
+        --bg-color: #f1f5f9;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --border-color: #e2e8f0;
+        --primary: #1e3a8a;
+        --accent: #3b82f6;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg-color);
+        color: var(--text-main);
+        margin: 0;
+        padding-top: 60px; /* Offset for pinned nav */
+    }
+
+    /* 📱 FIXED MOBILE NAV BAR: Allows safe horizontal swipe-scrolling */
+    .nav-bar {
+        background: #0f172a;
+        padding: 0 10px;
+        height: 50px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        overflow-x: auto; /* Forces scrolling when elements overflow mobile screens */
+        white-space: nowrap; /* Prevents text elements from breaking onto secondary vertical lines */
+        -webkit-overflow-scrolling: touch; /* High-performance momentum scroll for iOS mobile devices */
+    }
+
+    /* Hides the desktop browser scrollbar across nav headers to maintain a native app feel */
+    .nav-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .nav-bar a {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        padding: 6px 12px;
+        border-radius: 6px;
+        display: inline-block;
+        flex-shrink: 0; /* Prevents text squishing inside small containers */
+    }
+
+    .nav-bar a:hover {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-bar a.active {
+        color: #ffffff;
+        background: var(--accent);
+    }
+
+    /* Fluid Dashboard Main Container */
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 15px auto;
+        padding: 0 15px;
+        box-sizing: border-box;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 20px;
+        word-break: break-word; /* Prevents header overlap cuts */
+    }
+
+    .card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--border-color);
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .card h2 {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #0f172a;
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 10px;
+    }
+
+    /* 📱 RESPONSIVE STANDINGS TABLE: Eliminates desktop page cutoff issues */
+    .table-responsive-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 6px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 500px; /* Guarantees structured spacing for compact phone viewports */
+    }
+
+    th {
+        background: #f8fafc;
+        color: #0f172a;
+        padding: 12px 10px;
+        font-weight: bold;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.9rem;
+    }
+
+    tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    .col-team { text-align: left; width: 40%; color: var(--primary); font-size: 0.88rem; word-break: break-word; }
+    .col-record { text-align: center; width: 20%; font-weight: 600; }
+    .col-pf { text-align: right; width: 20%; font-variant-numeric: tabular-nums; }
+    .col-faab { text-align: center; width: 20%; font-weight: 600; color: #16a34a; }
+
+    /* 📱 ULTRALIGHT FLEXIBLE ROSTER DEPTH CHART GRID */
+    .roster-grid {
+        display: grid;
+        grid-template-columns: 1fr; /* Defaults to single column for standard mobile phones */
+        gap: 15px;
+        width: 100%;
+    }
+
+    /* Media query upgrade step path for tablet/desktop viewports */
+    @media(min-width: 680px) {
+        .roster-grid {
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Auto-wraps when screen room permits */
+        }
+        .card { padding: 24px; }
+        h1 { font-size: 1.8rem; }
+    }
+
+    .team-roster-box {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .team-roster-header {
+        background: #f8fafc;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-color);
+        border-left: 4px solid var(--accent);
+    }
+
+    .team-roster-header h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 700;
+        color: #0f172a;
+        word-break: break-word;
+    }
+
+    .roster-mini-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .roster-mini-table tr:nth-child(even) {
+        background-color: #fcfdfe;
+    }
+
+    .roster-mini-table td {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .bench-divider {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: center;
+        padding: 6px 12px !important;
+    }
+
+    /* Position pills styling */
+    .pos-pill {
+        display: inline-block;
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: white;
+        text-align: center;
+        min-width: 30px;
+        box-sizing: border-box;
+    }
+    .pos-QB  { background-color: #dc2626; }
+    .pos-RB  { background-color: #2563eb; }
+    .pos-WR  { background-color: #16a34a; }
+    .pos-TE  { background-color: #ea580c; }
+    .pos-K   { background-color: #7c3aed; }
+    .pos-DEF { background-color: #4b5563; }
+</style>
+
+
+</head>
+
+<body>
+    
+<!-- Upgraded Navigation Bar -->
+<div class="nav-bar">
+    <a href="index.html" class="active">Home Page</a>
+    <!--<a href="keepers.html">Keeper Tracker</a>-->
+    <a href="standings.html">Standings</a>
+    <a href="power-rankings.html">Power Rankings</a>
+    <a href="rules.html">League Rules</a>
+    <a href="team-stat-page.html">Team Rosters</a>
+    <a href="history.html">League History</a>
+</div>
+    
+<div class="dashboard-container">
+    <h1>🏈 Let The Best Marrow Win League Dashboard</h1>
+
+    <!-- Standings Card -->
+    <!-- Fixed Standings Section with Scroll Wrappers -->
+    <div class="card">
+        <h2>Standings</h2>
+        <div class="table-responsive-wrapper">
+            <table id="standings">
+                <thead>
+                    <tr>
+                        <th class="col-team">Team</th>
+                        <th class="col-record">Record</th>
+                        <th class="col-pf">PF</th>
+                        <th class="col-faab">FAAB</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Live FAAB & Transaction Ledger Card -->
+    <div class="card">
+        <h2>Recent Waivers & Transactions</h2>
+        <div class="table-responsive-wrapper">
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; width: 25%;">Type</th>
+                        <th style="text-align: left; width: 45%;">Transaction Details</th>
+                        <th style="text-align: center; width: 15%;">FAAB</th>
+                        <th style="text-align: right; width: 15%;">Team</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading league activity...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Weekly Matchup Live Scoreboard Grid -->
+        <!-- Weekly Matchup Live Scoreboard Grid -->
+    <div class="card">
+        <h2>Live Head-to-Head Scoreboard</h2>
+        <style>
+            .scoreboard-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 15px;
+                width: 100%;
+                margin-top: 10px;
+                box-sizing: border-box;
+            }
+            @media(min-width: 768px) {
+                .scoreboard-grid {
+                    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+                }
+            }
+            .matchup-box {
+                background: #f8fafc;
+                border: 1px solid var(--border-color);
+                border-radius: 8px;
+                padding: 12px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+                box-sizing: border-box;
+                width: 100%;
+            }
+            .scoreboard-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 0;
+            }
+            .scoreboard-row:first-child {
+                border-bottom: 1px dashed var(--border-color);
+                padding-bottom: 12px;
+            }
+            .scoreboard-row:last-child {
+                padding-top: 12px;
+            }
+            .team-meta-block {
+                display: flex;
+                flex-direction: column;
+                gap: 2px;
+                max-width: 65%;
+            }
+            .score-team-name {
+                font-weight: 600;
+                font-size: 0.92rem;
+                color: var(--text-main);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .team-rem-count {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                font-weight: 500;
+            }
+            .score-block-vertical {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 2px;
+            }
+            .score-value {
+                font-variant-numeric: tabular-nums;
+                font-weight: 700;
+                font-size: 1.1rem;
+                color: var(--primary);
+                line-height: 1;
+            }
+            .score-leader {
+                color: var(--success-color) !important;
+            }
+            .score-proj {
+                font-size: 0.75rem;
+                color: var(--text-muted);
+                font-variant-numeric: tabular-nums;
+            }
+            .vs-badge {
+                font-size: 0.65rem;
+                color: var(--text-muted);
+                font-weight: bold;
+                text-align: center;
+                background: #e2e8f0;
+                padding: 2px 6px;
+                border-radius: 10px;
+                margin: -4px auto;
+                width: fit-content;
+                display: block;
+                z-index: 5;
+                position: relative;
+            }
+        </style>
+        <div class="scoreboard-grid" id="scoreboardContainer">
+            <div style="text-align: center; color: var(--text-muted); width: 100%; padding: 15px;">Loading active matchup board...</div>
+        </div>
+    </div>
+
+    
+    <!-- Redesigned Depth-Chart Roster Card Grid -->
+    <div class="card">
+        <h2>Rosters</h2>
+        <div class="roster-grid" id="rosters">
+            <!-- Populated via JS -->
+        </div>
+    </div>
+</div>
+
+
+<script>
+// Global variable loaded dynamically from config.json
+let LEAGUE_ID = "";
+
+// Set your league's total starting FAAB budget 
+const TOTAL_FAAB_BUDGET = 100;
+
+// Helper array to sort roster tables logically by starting positional priority
+const positionOrder = ["QB", "RB", "WR", "TE", "K", "DEF"];
+
+async function loadLeague() {
+    try {
+        // 1. Load the central configuration file first
+        const configRes = await fetch("config.json");
+        const configData = await configRes.json();
+        LEAGUE_ID = configData.LEAGUE_ID;
+
+        if (!LEAGUE_ID) {
+            throw new Error("LEAGUE_ID missing from config.json");
+        }
+        // 2. Fetch the current NFL league state to find out what week we are in dynamically
+        const stateRes = await fetch(" https://api.sleeper.app/v1/state/nfl");
+        const stateData = await stateRes.json();
+        // Fallback to week 1 if the season hasn't started yet or returns 0
+        const currentWeek = stateData.display_week || stateData.week || 1; 
+        
+        // 3. Construct exact API endpoints securely using standard concatenation
+        const baseUrl = 'https://api.sleeper.app/v1/league/' + LEAGUE_ID;
+        const usersUrl = baseUrl + '/users';
+        const rostersUrl = baseUrl + '/rosters';
+        const transactionsUrl = baseUrl + '/transactions/' + currentWeek; // Fetches this week's live moves
+        const matchupsUrl = baseUrl + '/matchups/' + currentWeek;
+        const masterPlayersUrl = 'public/players.json'; 
+
+        const [usersRes, rostersRes, transactionsRes, matchupsRes, masterPlayersRes] = await Promise.all([
+            fetch(usersUrl),
+            fetch(rostersUrl),
+            fetch(transactionsUrl),
+            fetch(matchupsUrl),
+            fetch(masterPlayersUrl)
+        ]);
+
+        const users = await usersRes.json();
+        const rosters = await rostersRes.json();
+        const rawTransactions = await transactionsRes.json();
+        const rawMatchups = await matchupsRes.json();
+        const players = await masterPlayersRes.json();
+
+        // 4. Establish owner username maps and combined display titles
+        const rawOwnerMap = {};
+        const fullDisplayMap = {};
+        const rosterToNameMap = {}; 
+
+        users.forEach(user => {
+            const userName = user.display_name || user.username || "Unknown Owner";
+            rawOwnerMap[user.user_id] = userName;
+            
+            if (user.metadata && user.metadata.team_name) {
+                fullDisplayMap[user.user_id] = user.metadata.team_name + " (" + userName + ")";
+            } else {
+                fullDisplayMap[user.user_id] = userName;
+            }
+        });
+
+        rosters.forEach(r => {
+            rosterToNameMap[r.roster_id] = fullDisplayMap[r.owner_id] || ("Team " + r.roster_id);
+        });
+
+        // --- NEW LIVE SCOREBOARD RENDER BLOCK ---
+        const scoreboardContainer = document.getElementById("scoreboardContainer");
+        scoreboardContainer.innerHTML = "";
+
+        // Query our background cron-generated projections file side-by-side with Sleeper live data
+        async function buildScoreboardUI() {
+            let liveProjectionsMap = {};
+            try {
+                // Use a cache buster timestamp to load fresh json metrics on every load pass
+                const res = await fetch("live_projections.json?t=" + new Date().getTime());
+                if (res.ok) liveProjectionsMap = await res.json();
+            } catch (e) {
+                console.warn("Live projections database not populated yet. Defaulting to score baselines.");
+            }
+
+            // Group team scores, positions, and starters lists together by matching matchup_id pairs
+            const matchupPairs = {};
+            (rawMatchups || []).forEach(teamMatchup => {
+                const mId = teamMatchup.matchup_id;
+                if (!mId) return;
+                if (!matchupPairs[mId]) matchupPairs[mId] = [];
+                
+                const startersList = teamMatchup.starters || [];
+                let remainingPlayersCount = 0;
+                
+                startersList.forEach(pId => {
+                    const playerProfile = players[pId];
+                    if (playerProfile) {
+                        const pStatus = playerProfile.status ? playerProfile.status.toLowerCase() : "";
+                        if (pStatus !== "inactive" && playerProfile.injury_status !== "IR") {
+                            remainingPlayersCount++;
+                        }
+                    }
+                });
+
+                // Grab the exact pre-calculated team projection from your backend json database
+                const rIdStr = teamMatchup.roster_id.toString();
+                const actualPoints = teamMatchup.points || 0;
+                const finalProjectionValue = liveProjectionsMap[rIdStr] !== undefined 
+                    ? parseFloat(liveProjectionsMap[rIdStr]) 
+                    : actualPoints;
+
+                matchupPairs[mId].push({
+                    rosterId: teamMatchup.roster_id,
+                    points: actualPoints,
+                    projected: finalProjectionValue,
+                    remPlayers: remainingPlayersCount
+                });
+            });
+
+            // Loop through paired matchups and inject live rows into your grid layout
+            Object.keys(matchupPairs).forEach(mId => {
+                const pair = matchupPairs[mId];
+                if (pair.length < 2) return; 
+
+                const team1 = pair[0];
+                const team2 = pair[1];
+                const name1 = rosterToNameMap[team1.rosterId] || `Team ${team1.rosterId}`;
+                const name2 = rosterToNameMap[team2.rosterId] || `Team ${team2.rosterId}`;
+
+                // A. Check if the entire matchup is officially completed
+                const isMatchupFinished = (team1.remPlayers === 0 && team2.remPlayers === 0);
+
+                // B. Establish styling parameters for Live Leader vs Final Winner
+                let leaderClass1 = "";
+                let leaderClass2 = "";
+                let projClass1 = "";
+                let projClass2 = "";
+                let vsBadgeHtml = '<div class="vs-badge">VS</div>';
+                let matchBoxBackground = "#f8fafc";
+
+                if (isMatchupFinished) {
+                    // Matchup is Official: Highlight the actual score winner
+                    vsBadgeHtml = '<div class="vs-badge" style="background: #0f172a; color: #fff;">🏆 FINAL</div>';
+                    if (team1.points > team2.points) {
+                        leaderClass1 = "score-leader";
+                        matchBoxBackground = "linear-gradient(to right, #f0fdf4, #f8fafc)"; // Subtle green tint on left winner
+                    } else if (team2.points > team1.points) {
+                        leaderClass2 = "score-leader";
+                        matchBoxBackground = "linear-gradient(to left, #f0fdf4, #f8fafc)"; // Subtle green tint on right winner
+                    }
+                } else {
+                    // Matchup is Live: Highlight the team leading the score, and bold the higher projection
+                    leaderClass1 = team1.points > team2.points ? "score-leader" : "";
+                    leaderClass2 = team2.points > team1.points ? "score-leader" : "";
+                    
+                    // Highlighting the higher projection
+                    if (team1.projected > team2.projected) {
+                        projClass1 = "font-weight: 700; color: #2563eb; background: #eff6ff; padding: 1px 4px; border-radius: 4px;";
+                    } else if (team2.projected > team1.projected) {
+                        projClass2 = "font-weight: 700; color: #2563eb; background: #eff6ff; padding: 1px 4px; border-radius: 4px;";
+                    }
+                }
+
+                const matchBox = document.createElement("div");
+                matchBox.className = "matchup-box";
+                matchBox.style.background = matchBoxBackground;
+                
+                matchBox.innerHTML = `
+                    <div class="scoreboard-row">
+                        <div class="team-meta-block">
+                            <span class="score-team-name" style="${leaderClass1 ? 'font-weight: 700;' : ''}">${name1}</span>
+                            <span class="team-rem-count">${team1.remPlayers > 0 ? `🏃 ${team1.remPlayers} Left` : '✅ Done'}</span>
+                        </div>
+                        <div class="score-block-vertical">
+                            <span class="score-value ${leaderClass1}">${team1.points.toFixed(2)}</span>
+                            <span class="score-proj" style="${projClass1}">Proj: ${team1.projected.toFixed(1)}</span>
+                        </div>
+                    </div>
+                    ${vsBadgeHtml}
+                    <div class="scoreboard-row">
+                        <div class="team-meta-block">
+                            <span class="score-team-name" style="${leaderClass2 ? 'font-weight: 700;' : ''}">${name2}</span>
+                            <span class="team-rem-count">${team2.remPlayers > 0 ? `🏃 ${team2.remPlayers} Left` : '✅ Done'}</span>
+                        </div>
+                        <div class="score-block-vertical">
+                            <span class="score-value ${leaderClass2}">${team2.points.toFixed(2)}</span>
+                            <span class="score-proj" style="${projClass2}">Proj: ${team2.projected.toFixed(1)}</span>
+                        </div>
+                    </div>
+                `;
+                scoreboardContainer.appendChild(matchBox);
+            });
+        }
+
+        // Run internal function sequence block
+        buildScoreboardUI();
+        // --- END OF LIVE SCOREBOARD RENDER BLOCK ---
+
+        // 5. Sort standings by total points scored
+
+        rosters.sort((a,b) => {
+            const scoreA = (a.settings?.fpts || 0) + ((a.settings?.fpts_decimal || 0) / 100);
+            const scoreB = (b.settings?.fpts || 0) + ((b.settings?.fpts_decimal || 0) / 100);
+            return scoreB - scoreA;
+        });
+
+        // 6. Render the Standings Table
+        const standingsBody = document.querySelector("#standings tbody");
+        standingsBody.innerHTML = "";
+
+        rosters.forEach(team => {
+            const basePoints = team.settings?.fpts || 0;
+            const decimalPoints = team.settings?.fpts_decimal || 0;
+            const points = basePoints + (decimalPoints / 100);
+            
+            const wins = team.settings?.wins || 0;
+            const losses = team.settings?.losses || 0;
+            const customDisplayName = fullDisplayMap[team.owner_id] || ("Team " + team.roster_id);
+
+            // Calculate FAAB tracking metrics
+            const faabUsed = team.settings?.waiver_budget_used || 0;
+            const faabRemaining = TOTAL_FAAB_BUDGET - faabUsed;
+
+            standingsBody.innerHTML += `
+                <tr>
+                    <td class="col-team"><strong>${customDisplayName}</strong></td>
+                    <td class="col-record">${wins}-${losses}</td>
+                    <td class="col-pf"><strong>${points.toFixed(2)}</strong></td>
+                    <td class="col-faab">$${faabRemaining}</td>
+                </tr>
+            `;
+        });
+        
+        // 7. Render the Live FAAB & Transaction Ledger Table
+        const txBody = document.querySelector("#transactionsTable tbody");
+        txBody.innerHTML = "";
+
+        // Only look at successful completions (waivers, free agent pickups, and trades)
+        const completedTx = (rawTransactions || []).filter(t => t.status === "complete");
+
+        if (completedTx.length === 0) {
+            txBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 15px;">No transactions completed yet for Week ${currentWeek}.</td></tr>`;
+        } else {
+            // Take the 8 most recent moves to keep the homepage table clean
+            completedTx.slice(0, 8).forEach(tx => {
+                let txType = tx.type.toUpperCase(); // "WAIVER", "FREE_AGENT", or "TRADE"
+                let detailsText = "";
+                let faabDisplay = "—";
+                let executionTeam = "Multi-Team";
+
+                // Format text if it's a Waiver or Free Agent move
+                if (txType === "WAIVER" || txType === "FREE_AGENT") {
+                    const primaryRosterId = tx.roster_ids[0];
+                    executionTeam = rosterToNameMap[primaryRosterId] || "Unknown Team";
+                    
+                    let addedNames = [];
+                    let droppedNames = [];
+
+                    if (tx.adds) {
+                        Object.keys(tx.adds).forEach(pId => {
+                            const p = players[pId];
+                            addedNames.push(p ? `${p.first_name[0]}. ${p.last_name} (${p.position})` : `Player ${pId}`);
+                        });
+                    }
+                    if (tx.drops) {
+                        Object.keys(tx.drops).forEach(pId => {
+                            const p = players[pId];
+                            droppedNames.push(p ? `${p.first_name[0]}. ${p.last_name}` : `Player ${pId}`);
+                        });
+                    }
+
+                    if (addedNames.length > 0 && droppedNames.length > 0) {
+                        detailsText = `Added <strong>${addedNames.join(', ')}</strong>, Dropped ${droppedNames.join(', ')}`;
+                    } else if (addedNames.length > 0) {
+                        detailsText = `Picked up <strong>${addedNames.join(', ')}</strong>`;
+                    } else if (droppedNames.length > 0) {
+                        detailsText = `Dropped ${droppedNames.join(', ')}`;
+                    }
+
+                    // Check if it's a Waiver bid with FAAB attached
+                    if (tx.settings && tx.settings.waiver_bid !== undefined) {
+                        faabDisplay = `$${tx.settings.waiver_bid}`;
+                    } else if (txType === "FREE_AGENT") {
+                        faabDisplay = "$0";
+                    }
+                    
+                    if (txType === "FREE_AGENT") txType = "Free Agent";
+                    if (txType === "WAIVER") txType = "📝 Waiver Claim";
+
+                } else if (txType === "TRADE") {
+                    txType = "🤝 Trade Completed";
+                    detailsText = "Players and/or draft assets exchanged between managers.";
+                    faabDisplay = "—";
+                }
+
+                txBody.innerHTML += `
+                    <tr>
+                        <td style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">${txType}</td>
+                        <td style="font-size: 0.9rem;">${detailsText}</td>
+                        <td style="text-align: center; font-weight: bold; color: ${faabDisplay !== '—' && faabDisplay !== '$0' ? 'var(--success-color)' : 'var(--text-main)'};">${faabDisplay}</td>
+                        <td style="text-align: right; font-size: 0.85rem; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${executionTeam}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 8. Render the Redesigned Depth-Chart Roster Cards
+        const rosterContainer = document.getElementById("rosters");
+        rosterContainer.innerHTML = "";
+
+        rosters.forEach(team => {
+            const customDisplayName = fullDisplayMap[team.owner_id] || ("Team " + team.roster_id);
+            
+            const starterIds = team.starters || [];
+            const allPlayerIds = team.players || [];
+            
+            // Map full player data objects from your local cron job file cache
+            let startersList = starterIds.map(id => players[id]).filter(p => p !== undefined);
+            
+            // Isolate bench players by excluding active starting slot IDs
+            let benchList = allPlayerIds
+                .filter(id => !starterIds.includes(id))
+                .map(id => players[id])
+                .filter(p => p !== undefined);
+
+            // Positional sorting comparator function
+            const sortPositions = (a, b) => {
+                let indexA = positionOrder.indexOf(a.position);
+                let indexB = positionOrder.indexOf(b.position);
+                if (indexA === -1) indexA = 99;
+                if (indexB === -1) indexB = 99;
+                return indexA - indexB;
+            };
+
+            startersList.sort(sortPositions);
+            benchList.sort(sortPositions);
+
+            // Generate HTML markup strings for starter lists
+            let playerRowsHtml = "";
+            startersList.forEach(p => {
+                const posClass = "pos-" + (p.position || "DEF");
+                playerRowsHtml += `
+                    <tr>
+                        <td style="width: 50px;"><span class="pos-pill ${posClass}">${p.position || "DEF"}</span></td>
+                        <td><strong>${p.full_name}</strong></td>
+                        <td style="text-align: right; color: var(--text-muted); font-size: 0.8rem;">${p.team || "FA"}</td>
+                    </tr>
+                `;
+            });
+
+            // Append Bench Divider and calculate bench player elements
+            if (benchList.length > 0) {
+                playerRowsHtml += `
+                    <tr>
+                        <td colspan="3" class="bench-divider">Bench Players</td>
+                    </tr>
+                `;
+                
+                benchList.forEach(p => {
+                    const posClass = "pos-" + (p.position || "DEF");
+                    playerRowsHtml += `
+                        <tr>
+                            <td style="width: 50px;"><span class="pos-pill ${posClass}">${p.position || "DEF"}</span></td>
+                            <td style="color: #4b5563;">${p.full_name}</td>
+                            <td style="text-align: right; color: var(--text-muted); font-size: 0.8rem;">${p.team || "FA"}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // Inject the complete table assembly into your grid layout
+            rosterContainer.innerHTML += `
+                <div class="team-roster-box">
+                    <div class="team-roster-header">
+                        <h3>${customDisplayName}</h3>
+                    </div>
+                    <table class="roster-mini-table">
+                        <tbody>
+                            ${playerRowsHtml || '<tr><td colspan="3">No Players Rostered</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Failed to parse Sleeper league details:", err);
+    }
+}
+
+// Initial engine execution bootstrap and auto-refresh intervals
+loadLeague();
+setInterval(loadLeague, 300000);
+</script>
+
+
+</body>
+</html>
